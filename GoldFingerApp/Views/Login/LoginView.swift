@@ -23,9 +23,9 @@ struct LoginView: View{
                     .textFieldStyle(.roundedBorder)
                 SecureField("密码", text: $loginViewModel.password)
                     .textFieldStyle(.roundedBorder)
-                if !loginViewModel.errorMessage.isEmpty{
-                    Text(loginViewModel.errorMessage)
-                        .foregroundStyle(.red)
+                if !loginViewModel.loginMessage.isEmpty{
+                    Text(loginViewModel.loginMessage)
+                        .foregroundStyle(loginViewModel.loginMessage.contains("成功") ? .green : .red)
                 }
             }
             .padding(.horizontal, 10)
