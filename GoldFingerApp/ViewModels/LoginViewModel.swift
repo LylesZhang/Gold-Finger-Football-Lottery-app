@@ -6,31 +6,37 @@ class LoginViewModel: ObservableObject{
     @Published var username: String = ""
     @Published var password: String = ""
     @Published var isLoad: Bool = false
-    @Published var errorMessage: String = ""
+    @Published var loginMessage: String = ""
     
     func Login(){
         
-        errorMessage = ""
+        loginMessage = ""
         
         guard !username.isEmpty else{
-            errorMessage = "请输入用户名"
+            loginMessage = "请输入用户名"
             return
         }
         
         guard !password.isEmpty else{
-            errorMessage = "请输入密码"
+            loginMessage = "请输入密码"
             return
         }
         
         isLoad = true
         
-        if let user = UserService.shares.validLogin(username: username, password: password){
-            print("登陆成功！")
+        Task{
+            do{
+                let user = try await UserService.shares.validLogin(username: username, password: password)
+                await MainActor.run{
+                    loginMessage = "登录成功！"
+                    isLoad = false
+                }
+            }catch{
+                await MainActor.run{
+                    loginMessage = "密码或用户名不正确！"
+                    isLoad = false
+                }
+            }
         }
-        else{
-            errorMessage = "账号或密码错误！"
-        }
-        
-        isLoad = false
     }
 }
