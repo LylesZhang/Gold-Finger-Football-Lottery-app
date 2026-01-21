@@ -26,4 +26,6 @@ class UserService{
             throw NSError(domain: response.message ?? "登陆失败", code: -1)
         }
     }
+    
+    
 }

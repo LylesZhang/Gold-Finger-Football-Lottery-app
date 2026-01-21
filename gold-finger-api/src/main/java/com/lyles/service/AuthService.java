@@ -1,10 +1,17 @@
 package com.lyles.service;
 
+import java.util.UUID;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.lyles.repository.UcMemberRepository;
+
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
 import com.lyles.entity.UcMember;
 
 @Service
@@ -49,4 +56,43 @@ public class AuthService {
         }
         return false;
     }
+
+    public boolean existUser(String username){
+        UcMember user;
+        user = repository.findByUsername(username);
+
+        if(user == null) return false;
+        return true;
+    }
+
+    public boolean strongPassword(String password){
+        if (password == null || password.length() < 8 || password.length() > 12) return false;
+
+        boolean hasUpper = false, hasLower = false, hasDigit = false, hasSpecial = false;
+        for (char c : password.toCharArray()) {
+            if (Character.isUpperCase(c)) hasUpper = true;
+            else if (Character.isLowerCase(c)) hasLower = true;
+            else if (Character.isDigit(c)) hasDigit = true;
+            else hasSpecial = true;
+        }
+
+        return hasUpper && hasLower && hasDigit && hasSpecial;
+    }
+
+    public UcMember save(String username, String password){
+        UcMember user = new UcMember();
+
+        user.setUsername(username);
+
+        String salt = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        user.setSalt(salt);
+
+        String md5_password = DigestUtils.md5Hex(password + salt);
+        user.setPassword(md5_password);
+
+        repository.save(user);
+
+        return user;
+    }
+
 }

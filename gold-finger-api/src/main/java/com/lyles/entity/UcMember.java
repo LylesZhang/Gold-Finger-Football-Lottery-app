@@ -9,6 +9,7 @@ import lombok.Data;
 public class UcMember{
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer uid;
     private String username;
     private String password;
