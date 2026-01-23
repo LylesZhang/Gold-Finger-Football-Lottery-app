@@ -6,25 +6,53 @@ class UserService{
     
     func validLogin(username: String, password: String) async throws -> User{
         guard let url = URL(string: "http://localhost:8080/api/auth/login") else{
-            throw NSError(domain: "Invalid URL", code: -1)
+            throw APIError(message: "Invalid URL")
         }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-type")
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         
         let body = "idString=\(username)&password=\(password)"
         request.httpBody = body.data(using: .utf8)
         
         let (data, urlResponse) = try await URLSession.shared.data(for: request)
-        
+
+        print("Login Response: \(String(data: data, encoding: .utf8) ?? "无数据")")
+
         let response = try JSONDecoder().decode(LoginResponse.self, from: data)
-        
-        if response.success, let uid = response.uid, let username = response.username, let email = response.email{
-            return User(uid: uid, username: username, email: email)
+
+        if response.success, let uid = response.uid, let username = response.username{
+            return User(uid: uid, username: username)
         } else{
-            throw NSError(domain: response.message ?? "登陆失败", code: -1)
+            throw APIError(message: response.message ?? "登陆失败")
         }
+    }
+    
+    func validRegister(username: String, password: String) async throws -> User{
+        guard let url = URL(string: "http://localhost:8080/api/auth/register") else{
+            throw APIError(message: "Invalid URL")
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        
+        let body = "username=\(username)&password=\(password)"
+        request.httpBody = body.data(using: .utf8)
+        
+        let (data, urlResponse) = try await URLSession.shared.data(for: request)
+        
+        let response = try JSONDecoder().decode(RegisterResponse.self, from: data)
+        
+        print(String(data: data, encoding: .utf8) ?? "无数据")
+        
+        if response.success, let uid = response.uid, let username = response.username{
+            return  User(uid: uid, username: username)
+        } else{
+            throw APIError(message: response.message ?? "注册失败")
+        }
+        
     }
     
     

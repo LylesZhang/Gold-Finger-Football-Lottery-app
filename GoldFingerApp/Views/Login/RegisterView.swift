@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct RegisterView: View{
-    @StateObject private var loginViewModel = LoginViewModel()
     @StateObject private var registerViewModel = RegisterViewModel()
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View{
         VStack{
+
             Image("Login Background")
                 .resizable()
                 .frame(width:405, height:200)
@@ -20,20 +21,35 @@ struct RegisterView: View{
                     .font(.largeTitle)
                     .fontWeight(.heavy)
                     .foregroundStyle(.yellow)
-                TextField("请输入用户名", text: $loginViewModel.username)
+                TextField("请输入用户名", text: $registerViewModel.username)
                     .textFieldStyle(.roundedBorder)
-                SecureField("请输入密码", text: $loginViewModel.password)
+                SecureField("请输入密码", text: $registerViewModel.password)
                     .textFieldStyle(.roundedBorder)
-                if !loginViewModel.loginMessage.isEmpty{
-                    Text(loginViewModel.loginMessage)
-                        .foregroundStyle(loginViewModel.loginMessage.contains("成功") ? .green : .red)
+                if !registerViewModel.registerMessage.isEmpty{
+                    Text(registerViewModel.registerMessage)
+                        .foregroundStyle(registerViewModel.registerMessage.contains("成功") ? .green : .red)
                 }
             }
             .padding(.horizontal, 10)
             .padding(.bottom, 50)
             
             Button("创建新用户"){
-                registerViewModel.Register()
+                Task{
+                    await registerViewModel.Register()
+                    if registerViewModel.registerMessage.contains("成功"){
+                        try? await Task.sleep(nanoseconds: 1_000_000_000)
+                        dismiss()
+                    }
+                }
+            }
+            .padding(5)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.cyan, lineWidth: 2)
+            )
+            
+            Button("返回登录界面"){
+                dismiss()
             }
             .padding(5)
             .overlay(
@@ -51,6 +67,7 @@ struct RegisterView: View{
             
             Spacer()
         }
+        .navigationBarHidden(true)
     }
 }
 

@@ -33,7 +33,7 @@ class LoginViewModel: ObservableObject{
                 }
             }catch{
                 await MainActor.run{
-                    loginMessage = "密码或用户名不正确！"
+                    loginMessage = error.localizedDescription
                     isLoad = false
                 }
             }
