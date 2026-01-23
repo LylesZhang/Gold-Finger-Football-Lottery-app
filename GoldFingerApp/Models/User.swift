@@ -3,7 +3,7 @@ import Foundation
 struct User: Codable, Identifiable {
     let uid: Int
     let username: String
-    let email: String
+    let email: String?
     let password: String?
     let regip: String?
     let regdate: Int?
@@ -12,8 +12,8 @@ struct User: Codable, Identifiable {
     // Identifiable协议要求
     var id: Int { uid }
     
-    init(uid: Int, username: String, email: String,
-         password: String? = nil, regip: String? = nil, regdate: Int? = nil, salt: String? = nil) {
+    init(uid: Int, username: String,
+         email: String? = nil, password: String? = nil, regip: String? = nil, regdate: Int? = nil, salt: String? = nil) {
             self.uid = uid
             self.username = username
             self.password = password
