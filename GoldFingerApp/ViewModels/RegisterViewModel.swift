@@ -26,7 +26,7 @@ class RegisterViewModel: ObservableObject{
 
         do{
             let user = try await UserService.shares.validRegister(username: username, password: password)
-            await MainActor.run{
+            await MainActor.run{ // 网络请求完成后，需要切换到主线程来更新 UI
                 registerMessage = "注册成功！"
                 isLoad = false
             }
