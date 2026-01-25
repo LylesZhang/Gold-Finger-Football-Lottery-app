@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LoginView: View{
     @StateObject private var loginViewModel = LoginViewModel()
+    @State private var isLogin = false
     
     var body: some View{
         NavigationStack{
@@ -34,7 +35,13 @@ struct LoginView: View{
                 
                 VStack{
                     Button("登录"){
-                        loginViewModel.Login()
+                        Task{
+                            await loginViewModel.Login()
+                            if(loginViewModel.loginMessage.contains("成功")){
+                                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                                isLogin = true
+                            }
+                        }
                     }
                     .padding(5)
                     .overlay(
@@ -50,6 +57,9 @@ struct LoginView: View{
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.cyan, lineWidth: 2)
                     )
+                }
+                .navigationDestination(isPresented: $isLogin){
+                    AccountView()
                 }
                 
                 Spacer()
