@@ -8,11 +8,15 @@ import com.lyles.repository.PayUserRepository;
 
 @Service
 public class PayuserService {
+
     @Autowired
     private PayUserRepository payUserRepository;
 
     public Double getBalanceByUsername(String username){
         PayUser payUser = payUserRepository.findBalancebyUsername(username);
-        return payUser.getBalance();
+        if(payUser != null){
+            return payUser.getBalance();
+        }
+        return null;
     }
 }

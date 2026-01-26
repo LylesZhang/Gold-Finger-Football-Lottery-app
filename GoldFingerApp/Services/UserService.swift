@@ -18,8 +18,6 @@ class UserService{
         
         let (data, urlResponse) = try await URLSession.shared.data(for: request)
 
-        print("Login Response: \(String(data: data, encoding: .utf8) ?? "无数据")")
-
         let response = try JSONDecoder().decode(LoginResponse.self, from: data)
 
         if response.success, let uid = response.uid, let username = response.username{
@@ -45,15 +43,29 @@ class UserService{
         
         let response = try JSONDecoder().decode(RegisterResponse.self, from: data)
         
-        print(String(data: data, encoding: .utf8) ?? "无数据")
-        
         if response.success, let uid = response.uid, let username = response.username{
             return  User(uid: uid, username: username)
         } else{
             throw APIError(message: response.message ?? "注册失败")
         }
-        
     }
     
-    
+    func getAccountinfo(username: String) async throws -> AccountInfoResponse{
+        guard let url = URL(string: "http://localhost:8080/api/payuser/balance?username=\(username)") else{
+            throw APIError(message: "Invalid URL")
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, urlResponse) = try await URLSession.shared.data(for: request)
+        
+        let response = try JSONDecoder().decode(AccountInfoResponse.self, from: data)
+        
+        if response.success{
+            return  response
+        } else{
+            throw APIError(message: response.message ?? "查找余额失败")
+        }
+    }
 }
