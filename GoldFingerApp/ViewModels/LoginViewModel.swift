@@ -7,8 +7,9 @@ class LoginViewModel: ObservableObject{
     @Published var password: String = ""
     @Published var isLoad: Bool = false
     @Published var loginMessage: String = ""
+    @Published var loginUser: User? = nil
     
-    func Login(){
+    func Login() async{
         
         loginMessage = ""
         
@@ -24,18 +25,17 @@ class LoginViewModel: ObservableObject{
         
         isLoad = true
         
-        Task{
-            do{
-                let user = try await UserService.shares.validLogin(username: username, password: password)
-                await MainActor.run{
-                    loginMessage = "登录成功！"
-                    isLoad = false
-                }
-            }catch{
-                await MainActor.run{
-                    loginMessage = error.localizedDescription
-                    isLoad = false
-                }
+        do{
+            let user = try await UserService.shares.validLogin(username: username, password: password)
+            await MainActor.run{
+                loginMessage = "登录成功！"
+                loginUser = user
+                isLoad = false
+            }
+        }catch{
+            await MainActor.run{
+                loginMessage = error.localizedDescription
+                isLoad = false
             }
         }
     }
