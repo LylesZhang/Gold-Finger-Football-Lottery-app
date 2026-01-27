@@ -38,7 +38,6 @@ struct LoginView: View{
                         Task{
                             await loginViewModel.Login()
                             if(loginViewModel.loginMessage.contains("成功")){
-                                try? await Task.sleep(nanoseconds: 1_000_000_000)
                                 isLogin = true
                             }
                         }
@@ -58,9 +57,6 @@ struct LoginView: View{
                             .stroke(Color.cyan, lineWidth: 2)
                     )
                 }
-                .navigationDestination(isPresented: $isLogin){
-                    AccountView()
-                }
                 
                 Spacer()
                 
@@ -71,6 +67,16 @@ struct LoginView: View{
                     .offset(y:80)
                 
                 Spacer()
+            }
+            .navigationDestination(isPresented: $isLogin){
+                if let user = loginViewModel.loginUser{
+                    AccountView(username: user.username)
+                }
+            }
+            .onAppear {
+                isLogin = false
+                loginViewModel.loginMessage = ""
+                loginViewModel.loginUser = nil
             }
         }
     }

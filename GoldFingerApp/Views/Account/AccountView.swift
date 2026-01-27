@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AccountView: View {
+    let username: String
     @State private var balance: Double = 0.0
 
     var body: some View {
@@ -92,11 +93,21 @@ struct AccountView: View {
             Spacer()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear{
+            Task{
+                do{
+                    let accountInfo = try await UserService.shares.getAccountinfo(username: username)
+                    balance = accountInfo.balance ?? 0.0
+                } catch{
+                    print("用户余额信息获取失败")
+                }
+            }
+        }
     }
 }
 
 #Preview {
     NavigationStack {
-        AccountView()
+        AccountView(username: "AngelTest")
     }
 }
