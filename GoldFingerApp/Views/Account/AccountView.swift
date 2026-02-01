@@ -1,15 +1,9 @@
-//
-//  AccountView.swift
-//  GoldFingerApp
-//
-//  Created by Zero_Legend on 2026/1/24.
-//
-
 import SwiftUI
 
 struct AccountView: View {
-    let username: String
+    let user: User
     @State private var balance: Double = 0.0
+    @State private var serviceList : [PayService] = []
 
     var body: some View {
         VStack(spacing: 20) {
@@ -52,37 +46,23 @@ struct AccountView: View {
                 Text("订阅服务")
                     .font(.headline)
                     .foregroundStyle(.gray)
-
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("金手指日报")
-                            .font(.title2)
-                            .fontWeight(.bold)
-
-                        Text("有效期至：2026-12-31")
-                            .font(.caption)
-                            .foregroundStyle(.gray)
-                    }
-
-                    Spacer()
-                }
-                .padding()
                 
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("竞彩日报")
-                            .font(.title2)
-                            .fontWeight(.bold)
+                ForEach(serviceList){ service in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("\(service.psServid)")
+                                .font(.title2)
+                                .fontWeight(.bold)
 
-                        Text("有效期至：2026-12-31")
-                            .font(.caption)
-                            .foregroundStyle(.gray)
+                            Text("有效期至：\(service.enddate)")
+                                .font(.caption)
+                                .foregroundStyle(.gray)
+                        }
+
+                        Spacer()
                     }
-
-                    Spacer()
+                    .padding()
                 }
-                .padding()
-
             }
             .padding()
             .frame(maxWidth: .infinity)
@@ -96,10 +76,19 @@ struct AccountView: View {
         .onAppear{
             Task{
                 do{
-                    let accountInfo = try await UserService.shares.getAccountinfo(username: username)
+                    let accountInfo = try await UserService.shares.getAccountinfo(username: user.username)
                     balance = accountInfo.balance ?? 0.0
                 } catch{
                     print("用户余额信息获取失败")
+                }
+                
+                do{
+                    let response = try await UserService.shares.getAllPayServices(uid: user.uid)
+                    print("获取到的服务列表: \(response.serviceList ?? [])")
+                    print("服务列表数量: \(response.serviceList?.count ?? 0)")
+                    serviceList = response.serviceList ?? []
+                } catch{
+                    print("订阅服务获取失败: \(error)")
                 }
             }
         }
@@ -108,6 +97,6 @@ struct AccountView: View {
 
 #Preview {
     NavigationStack {
-        AccountView(username: "AngelTest")
+//        AccountView(user: nil)
     }
 }
