@@ -70,7 +70,7 @@ struct LoginView: View{
             }
             .navigationDestination(isPresented: $isLogin){
                 if let user = loginViewModel.loginUser{
-                    AccountView(username: user.username)
+                    AccountView(user: user)
                 }
             }
             .onAppear {

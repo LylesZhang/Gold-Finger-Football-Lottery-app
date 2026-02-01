@@ -49,8 +49,8 @@ public class AuthService {
         String dbpassword = user.getPassword();
         String dbSalt = user.getSalt();
 
-        String md5_password1 = DigestUtils.md5Hex(password + dbSalt);
-        String md5_password2 = DigestUtils.md5Hex(md5_password1 + dbSalt);
+        String md5_password1 = DigestUtils.md5Hex(password) + dbSalt;
+        String md5_password2 = DigestUtils.md5Hex(md5_password1);
 
         if(md5_password2.equals(dbpassword)){
             return true;
@@ -88,8 +88,8 @@ public class AuthService {
         String salt = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
         user.setSalt(salt);
 
-        String md5_password1 = DigestUtils.md5Hex(password + salt);
-        String md5_password2 = DigestUtils.md5Hex(md5_password1 + salt);
+        String md5_password1 = DigestUtils.md5Hex(password) + salt;
+        String md5_password2 = DigestUtils.md5Hex(md5_password1);
         user.setPassword(md5_password2);
 
         repository.save(user);
