@@ -25,6 +25,7 @@ public class PayuserService {
 
     public ArrayList<PayService> getServicesByUid(int uid){
         ArrayList<PayService> serviceList = payUserRepository.findServicesByUid(uid);
+
         if(serviceList != null){
             return serviceList;
         }

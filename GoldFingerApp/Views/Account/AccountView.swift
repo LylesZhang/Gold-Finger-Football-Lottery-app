@@ -84,9 +84,7 @@ struct AccountView: View {
                 
                 do{
                     let response = try await UserService.shares.getAllPayServices(uid: user.uid)
-                    print("获取到的服务列表: \(response.serviceList ?? [])")
-                    print("服务列表数量: \(response.serviceList?.count ?? 0)")
-                    serviceList = response.serviceList ?? []
+                    serviceList = response.servicelist ?? []
                 } catch{
                     print("订阅服务获取失败: \(error)")
                 }

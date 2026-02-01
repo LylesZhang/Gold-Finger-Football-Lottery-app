@@ -73,14 +73,14 @@ class UserService{
         guard let url = URL(string: "http://localhost:8080/api/payuser/payservice?uid=\(uid)") else{
             throw APIError(message: "Invalid URL")
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
+
         let (data, urlResponse) = try await URLSession.shared.data(for: request)
-        
+
         let response = try JSONDecoder().decode(PayServiceResponse.self, from: data)
-        
+
         if response.success{
             return  response
         } else{

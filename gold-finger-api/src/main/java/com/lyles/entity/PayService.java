@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Entity
 @Table(name = "pay_services")
 @Data
@@ -25,8 +27,10 @@ public class PayService {
     private Double psMoney;
 
     @Column(name = "begindate")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate begindate;
 
     @Column(name = "enddate")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate enddate;
 }
