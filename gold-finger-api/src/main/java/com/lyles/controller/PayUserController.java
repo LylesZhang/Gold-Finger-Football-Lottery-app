@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lyles.entity.PayUser;
+import com.lyles.dto.PayServiceDetail;
 import com.lyles.entity.PayService;
 import com.lyles.service.PayuserService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,7 +49,7 @@ public class PayUserController {
 
         Map<String, Object> response = new HashMap<>();
 
-        ArrayList<PayService> serviceList = payuserService.getServicesByUid(uid);
+        ArrayList<PayServiceDetail> serviceList = payuserService.getServicesByUid(uid);
         if(serviceList != null){
             response.put("success", true);
             response.put("uid", uid);
