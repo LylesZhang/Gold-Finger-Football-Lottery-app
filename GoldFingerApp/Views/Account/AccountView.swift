@@ -47,21 +47,23 @@ struct AccountView: View {
                     .font(.headline)
                     .foregroundStyle(.gray)
                 
-                ForEach(serviceList){ service in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("\(service.psServid)")
-                                .font(.title2)
-                                .fontWeight(.bold)
+                ScrollView{
+                    ForEach(serviceList){ service in
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("\(service.serviceName ?? "未知服务")")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
 
-                            Text("有效期至：\(service.enddate)")
-                                .font(.caption)
-                                .foregroundStyle(.gray)
+                                Text("有效期至：\(service.enddate)")
+                                    .font(.caption)
+                                    .foregroundStyle(.gray)
+                            }
+
+                            Spacer()
                         }
-
-                        Spacer()
+                        .padding()
                     }
-                    .padding()
                 }
             }
             .padding()
