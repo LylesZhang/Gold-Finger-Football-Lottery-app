@@ -23,8 +23,10 @@ struct LoginView: View{
                         .foregroundStyle(.yellow)
                     TextField("用户名", text: $loginViewModel.username)
                         .textFieldStyle(.roundedBorder)
+                        .textInputAutocapitalization(.never)
                     SecureField("密码", text: $loginViewModel.password)
                         .textFieldStyle(.roundedBorder)
+                        .textInputAutocapitalization(.never)
                     if !loginViewModel.loginMessage.isEmpty{
                         Text(loginViewModel.loginMessage)
                             .foregroundStyle(loginViewModel.loginMessage.contains("成功") ? .green : .red)
