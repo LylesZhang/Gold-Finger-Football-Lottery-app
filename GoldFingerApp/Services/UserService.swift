@@ -4,7 +4,7 @@ class UserService{
     static let shares = UserService()
     private init(){}
     
-    func validLogin(username: String, password: String) async throws -> User{
+    func validLogin(username: String, password: String, captchaId: String, captchaCode: String) async throws -> User{
         guard let url = URL(string: "http://localhost:8080/api/auth/login") else{
             throw APIError(message: "Invalid URL")
         }
@@ -13,7 +13,7 @@ class UserService{
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         
-        let body = "idString=\(username)&password=\(password)"
+        let body = "idString=\(username)&password=\(password)&captchaId=\(captchaId)&captchaCode=\(captchaCode)"
         request.httpBody = body.data(using: .utf8)
         
         let (data, urlResponse) = try await URLSession.shared.data(for: request)
@@ -85,6 +85,25 @@ class UserService{
             return  response
         } else{
             throw APIError(message: response.message ?? "服务不存在")
+        }
+    }
+    
+    func getCaptcha() async throws -> CaptchaResponse{
+        guard let url = URL(string: "http://localhost:8080/api/auth/captcha") else{
+            throw APIError(message: "Invalid URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let (data, urlResponse) = try await URLSession.shared.data(for: request)
+
+        let response = try JSONDecoder().decode(CaptchaResponse.self, from: data)
+
+        if response.success{
+            return  response
+        } else{
+            throw APIError(message: response.message ?? "验证码创建失败")
         }
     }
 }

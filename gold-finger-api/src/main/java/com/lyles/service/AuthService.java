@@ -1,6 +1,7 @@
 package com.lyles.service;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ public class AuthService {
 
     @Autowired
     private UcMemberRepository repository;
+
+    private final ConcurrentHashMap<String, String> captchaStore = new ConcurrentHashMap<>();
 
     public UcMember login(String idString, String password){
         UcMember user;
@@ -97,4 +100,12 @@ public class AuthService {
         return user;
     }
 
+    public void storeCaptcha(String captchaId, String code){
+        captchaStore.put(captchaId, code);
+    }
+
+    public boolean verifyCapta(String captachaId, String code){
+        String stored = captchaStore.remove(captachaId);
+        return stored != null && stored.equals(code);
+    }
 }
