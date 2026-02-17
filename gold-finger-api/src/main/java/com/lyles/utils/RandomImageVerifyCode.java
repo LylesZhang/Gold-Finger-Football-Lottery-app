@@ -14,12 +14,6 @@ import javax.imageio.ImageIO;
 public class RandomImageVerifyCode {
     public static final String BASE_NUMBER = "qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM0123456789";
 
-    // public static void main(String[] args) {
-    //     String resultCode = RandomImageVerifyCode.randomString(BASE_NUMBER, 4);
-    //     System.out.println(resultCode);
-
-    // }
-
     //生成随机字符串
     public static String randomString(String baseString, int length) {
         if (baseString == null || baseString == "") {
