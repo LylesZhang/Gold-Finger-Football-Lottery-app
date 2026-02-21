@@ -91,7 +91,7 @@ public class AuthController {
 
         if(verifyCodeImage != null && captchaId != null){
 
-            service.storeCaptcha(captchaId, verifyCodeImage);
+            service.storeCaptcha(captchaId, code);
             response.put("success", true);
             response.put("captchaId", captchaId);
             response.put("verifyCodeImage", verifyCodeImage);

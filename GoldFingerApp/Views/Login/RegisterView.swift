@@ -24,9 +24,11 @@ struct RegisterView: View{
                 TextField("请输入用户名", text: $registerViewModel.username)
                     .textFieldStyle(.roundedBorder)
                     .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
                 SecureField("请输入密码", text: $registerViewModel.password)
                     .textFieldStyle(.roundedBorder)
                     .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
                 if !registerViewModel.registerMessage.isEmpty{
                     Text(registerViewModel.registerMessage)
                         .foregroundStyle(registerViewModel.registerMessage.contains("成功") ? .green : .red)
