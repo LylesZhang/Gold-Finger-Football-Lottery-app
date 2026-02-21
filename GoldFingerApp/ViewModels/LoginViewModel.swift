@@ -16,9 +16,6 @@ class LoginViewModel: ObservableObject{
     
     func Login() async{
         
-        loginMessage = ""
-        await loadCapta()
-        
         guard !username.isEmpty else{
             loginMessage = "请输入用户名"
             return

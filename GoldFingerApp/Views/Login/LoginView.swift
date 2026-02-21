@@ -24,9 +24,30 @@ struct LoginView: View{
                     TextField("用户名", text: $loginViewModel.username)
                         .textFieldStyle(.roundedBorder)
                         .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
                     SecureField("密码", text: $loginViewModel.password)
                         .textFieldStyle(.roundedBorder)
                         .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    HStack{
+                        TextField("验证码", text:$loginViewModel.captchaCode)
+                        .textFieldStyle(.roundedBorder)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .padding(.trailing, 200)
+                        
+                        if let image = loginViewModel.captchaImage {
+                            Button{
+                                Task{
+                                    await loginViewModel.loadCapta()
+                                }
+                            } label: {
+                                Image(uiImage: image)
+                                .resizable()
+                                .frame(width: 105, height: 35)
+                            }
+                        }
+                    }
                     if !loginViewModel.loginMessage.isEmpty{
                         Text(loginViewModel.loginMessage)
                             .foregroundStyle(loginViewModel.loginMessage.contains("成功") ? .green : .red)
@@ -38,7 +59,7 @@ struct LoginView: View{
                 VStack{
                     Button("登录"){
                         Task{
-                            await loginViewModel.Login()
+                            try await loginViewModel.Login()
                             if(loginViewModel.loginMessage.contains("成功")){
                                 isLogin = true
                             }
@@ -79,6 +100,9 @@ struct LoginView: View{
                 isLogin = false
                 loginViewModel.loginMessage = ""
                 loginViewModel.loginUser = nil
+                Task{
+                    await loginViewModel.loadCapta()
+                }
             }
         }
     }
