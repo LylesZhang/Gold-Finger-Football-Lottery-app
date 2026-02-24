@@ -14,11 +14,32 @@ struct SubscribeView: View {
             ScrollView {
                 LazyVStack(spacing: 12) {
                     ForEach(serviceList) { service in
-                        Text(service.name ?? "")
+                        NavigationLink(destination: SubscribeView()) {
+                            VStack{
+                                Text(service.name ?? "")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.black)
+                                
+                                Spacer()
+                                
+                                Text(service.intro ?? "点击查看详情")
+                            }
+                        }
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 8)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundStyle(.gray)
+                        .cornerRadius(30)
                     }
                 }
                 .padding(.horizontal)
             }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(15)
+            .padding(.horizontal)
         }
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
