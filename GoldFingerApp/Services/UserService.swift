@@ -106,4 +106,23 @@ class UserService{
             throw APIError(message: response.message ?? "验证码创建失败")
         }
     }
+    
+    func getAllAvailableServices() async throws -> ServiceConfigResponse{
+        guard let url = URL(string: "http://localhost:8080/api/service/all") else{
+            throw APIError(message: "Invalid URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let (data, urlResponse) = try await URLSession.shared.data(for: request)
+
+        let response = try JSONDecoder().decode(ServiceConfigResponse.self, from: data)
+
+        if response.success{
+            return  response
+        } else{
+            throw APIError(message: response.message ?? "服务列表拉取失败")
+        }
+    }
 }

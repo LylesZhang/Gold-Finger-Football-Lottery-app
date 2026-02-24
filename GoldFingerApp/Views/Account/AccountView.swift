@@ -43,9 +43,23 @@ struct AccountView: View {
 
             // 订阅服务部分
             VStack(spacing: 10) {
-                Text("订阅服务")
-                    .font(.headline)
-                    .foregroundStyle(.gray)
+                ZStack(){
+                    Text("订阅服务")
+                        .font(.headline)
+                        .foregroundStyle(.gray)
+                    
+                    HStack(){
+                        Spacer()
+                        NavigationLink(destination: SubscribeView()) {
+                            Text("订阅")
+                        }
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 8)
+                        .background(Color.blue)
+                        .foregroundStyle(.white)
+                        .cornerRadius(30)
+                    }
+                }
                 
                 ScrollView{
                     ForEach(serviceList){ service in
@@ -95,8 +109,9 @@ struct AccountView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-//        AccountView(user: nil)
+struct AccountView_Previews: PreviewProvider {
+    static var previews: some View {
+        let testUser = User(uid: 65488, username: "Zhangchun")
+        AccountView(user: testUser)
     }
 }
