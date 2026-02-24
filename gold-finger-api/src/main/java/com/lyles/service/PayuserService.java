@@ -52,7 +52,7 @@ public class PayuserService {
                     detail.setServiceEnabled(config.getEnabled());
                     detail.setServiceSmsEnabled(config.getSmsEnabled());
                 }
-
+                
                 detailedList.add(detail);
             }
 
