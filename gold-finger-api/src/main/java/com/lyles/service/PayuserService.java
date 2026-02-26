@@ -31,29 +31,31 @@ public class PayuserService {
 
         if (serviceList != null) {
             for (PayService item : serviceList) {
+                //只需要显示金手指APP有的服务
+                if(PayConfig.IOSAPP.contains(item.getPsServid())){
+                    PayServiceDetail detail = new PayServiceDetail();
 
-                PayServiceDetail detail = new PayServiceDetail();
+                    detail.setPsId(item.getPsId());
+                    detail.setUid(item.getUid());
+                    detail.setPsServid(item.getPsServid());
+                    detail.setPsMoney(item.getPsMoney());
+                    detail.setBegindate(item.getBegindate());
+                    detail.setEnddate(item.getEnddate());
 
-                detail.setPsId(item.getPsId());
-                detail.setUid(item.getUid());
-                detail.setPsServid(item.getPsServid());
-                detail.setPsMoney(item.getPsMoney());
-                detail.setBegindate(item.getBegindate());
-                detail.setEnddate(item.getEnddate());
+                    // 从 PayConfig 获取服务详情
+                    PayConfig.ServiceConfig config = PayConfig.SERVICES.get(item.getPsServid());
 
-                // 从 PayConfig 获取服务详情
-                PayConfig.ServiceConfig config = PayConfig.SERVICES.get(item.getPsServid());
-
-                if (config != null) {
-                    detail.setServiceName(config.getName());
-                    detail.setServiceIntro(config.getIntro());
-                    detail.setServiceTimeType(config.getTimeType());
-                    detail.setServiceTimeTypeName(PayConfig.SERVICE_TIME_TYPES.get(config.getTimeType()));
-                    detail.setServiceEnabled(config.getEnabled());
-                    detail.setServiceSmsEnabled(config.getSmsEnabled());
+                    if (config != null) {
+                        detail.setServiceName(config.getName());
+                        detail.setServiceIntro(config.getIntro());
+                        detail.setServiceTimeType(config.getTimeType());
+                        detail.setServiceTimeTypeName(PayConfig.SERVICE_TIME_TYPES.get(config.getTimeType()));
+                        detail.setServiceEnabled(config.getEnabled());
+                        detail.setServiceSmsEnabled(config.getSmsEnabled());
                 }
                 
                 detailedList.add(detail);
+                }
             }
 
             if(detailedList != null){
