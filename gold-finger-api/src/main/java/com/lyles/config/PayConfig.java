@@ -24,6 +24,7 @@ public final class PayConfig {
     public static final List<Integer> JPTJ;
     public static final List<Integer> APP;
     public static final List<Integer> JCLMS;
+    public static final List<Integer> IOSAPP;
 
     static {
         service(1).setIntro("胜负彩、任选九、进球彩及半全场四个彩种的特色栏目临场数据及推介，一般于彩票截售当天下午3点左右上线。");
@@ -41,6 +42,12 @@ public final class PayConfig {
         service(41).setEnabled(true);
         service(41).setIntro("<span style=\"color:red;\">分一季度（180）、半年（360）两种定制方式。</span>《金手指日报》每日提供传统足彩、竞彩足球、竞彩篮球、北京单场，四大彩种的比赛数据、盘口、赔率分析！");
         service(41).setSmsEnabled(false);
+
+        service(60).setName("金手指日报(700元/半年)");
+        service(60).setMoney(700);
+        service(60).setTimeType(5);
+        service(60).setEnabled(true);
+        service(60).setSmsEnabled(false);
 
         service(59).setName("竞彩日报(988元/月)");
         service(59).setMoney(988);
@@ -588,6 +595,7 @@ public final class PayConfig {
         SERVICE_TIME_TYPES_INTERNAL.put(2, "月");
         SERVICE_TIME_TYPES_INTERNAL.put(3, "年");
         SERVICE_TIME_TYPES_INTERNAL.put(4, "一季度");
+        SERVICE_TIME_TYPES_INTERNAL.put(5, "半年");
 
         SERVICE_GROUPS_INTERNAL.put(0, new ServiceGroup("竞技彩", List.of(2, 41, 303)));
         SERVICE_GROUPS_INTERNAL.put(1, new ServiceGroup("数字彩", List.of(9, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58)));
@@ -800,6 +808,7 @@ public final class PayConfig {
         JPTJ = List.of(197033, 197038, 197042, 197046, 197035, 197069);
         APP = List.of(277001, 277002, 278001, 279001, 280001, 282001);
         JCLMS = List.of(277, 278, 279, 280, 282, 323, 324, 325, 326, 327, 328, 329, 331, 332, 333, 396, 397);
+        IOSAPP = List.of(41, 60, 59);
 
         SERVICES = Collections.unmodifiableMap(SERVICES_INTERNAL);
         DIANBO = Collections.unmodifiableMap(DIANBO_INTERNAL);
