@@ -30,7 +30,7 @@ struct SubscribeView: View {
                     // 服务列表
                     LazyVStack(spacing: 12) {
                         ForEach(serviceList) { service in
-                            NavigationLink(destination: SubscribeView()) {
+                            NavigationLink(destination: ServiceView(service: service)) {
                                 HStack(spacing: 16) {
                                     // 左侧图标
                                     ZStack {
