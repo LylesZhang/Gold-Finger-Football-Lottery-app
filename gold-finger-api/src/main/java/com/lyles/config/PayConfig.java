@@ -37,8 +37,8 @@ public final class PayConfig {
         service(2).setIntro("《足彩金手指》电子版于周一下午至周四下午逐步更新。");
 
         service(41).setName("金手指日报(年度)");
-        service(41).setMoney(180);
-        service(41).setTimeType(4);
+        service(41).setMoney(1400);
+        service(41).setTimeType(3);
         service(41).setEnabled(true);
         service(41).setIntro("<span style=\"color:red;\">分一季度（180）、半年（360）两种定制方式。</span>《金手指日报》每日提供传统足彩、竞彩足球、竞彩篮球、北京单场，四大彩种的比赛数据、盘口、赔率分析！");
         service(41).setSmsEnabled(false);
