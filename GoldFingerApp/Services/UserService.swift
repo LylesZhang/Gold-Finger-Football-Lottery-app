@@ -107,22 +107,40 @@ class UserService{
         }
     }
     
-    func getAllAvailableServices() async throws -> ServiceConfigResponse{
-        guard let url = URL(string: "http://localhost:8080/api/service/all") else{
+    func subscribeService(uid: Int, psServid: Int, timeType: Int) async throws {
+        guard let url = URL(string: "http://localhost:8080/api/service/subscribe?uid=\(uid)&ps_servid=\(psServid)&timeType=\(timeType)") else {
+            throw APIError(message: "Invalid URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+
+        let response = try JSONDecoder().decode(SubscribeResponse.self, from: data)
+
+        if !response.success {
+            throw APIError(message: response.message ?? "订阅失败")
+        }
+    }
+
+    func getAllServiceGroups() async throws -> ServiceGroupResponse {
+        guard let url = URL(string: "http://localhost:8080/api/service/groups") else {
             throw APIError(message: "Invalid URL")
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
 
-        let (data, urlResponse) = try await URLSession.shared.data(for: request)
+        let (data, _) = try await URLSession.shared.data(for: request)
 
-        let response = try JSONDecoder().decode(ServiceConfigResponse.self, from: data)
+        let response = try JSONDecoder().decode(ServiceGroupResponse.self, from: data)
 
-        if response.success{
-            return  response
-        } else{
-            throw APIError(message: response.message ?? "服务列表拉取失败")
+        if response.success {
+            return response
+        } else {
+            throw APIError(message: response.message ?? "服务分组拉取失败")
         }
     }
+
 }

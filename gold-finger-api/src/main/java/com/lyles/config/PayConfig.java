@@ -25,6 +25,7 @@ public final class PayConfig {
     public static final List<Integer> APP;
     public static final List<Integer> JCLMS;
     public static final List<Integer> IOSAPP;
+    public static final List<ServiceGroupConfig> IOSAPP_GROUPS;
 
     static {
         service(1).setIntro("胜负彩、任选九、进球彩及半全场四个彩种的特色栏目临场数据及推介，一般于彩票截售当天下午3点左右上线。");
@@ -808,7 +809,18 @@ public final class PayConfig {
         JPTJ = List.of(197033, 197038, 197042, 197046, 197035, 197069);
         APP = List.of(277001, 277002, 278001, 279001, 280001, 282001);
         JCLMS = List.of(277, 278, 279, 280, 282, 323, 324, 325, 326, 327, 328, 329, 331, 332, 333, 396, 397);
-        IOSAPP = List.of(41, 60, 59);
+        IOSAPP = List.of(41);
+        IOSAPP_GROUPS = List.of(
+            new ServiceGroupConfig(
+                "金手指日报",
+                List.of(
+                    new ServicePlanConfig(41, "半年", 700, 5),
+                    new ServicePlanConfig(41, "年度", 1400, 3)
+                ),
+                false,
+                "《金手指日报》每日提供传统足彩、竞彩足球、竞彩篮球、北京单场，四大彩种的比赛数据、盘口、赔率分析！"
+            )
+        );
 
         SERVICES = Collections.unmodifiableMap(SERVICES_INTERNAL);
         DIANBO = Collections.unmodifiableMap(DIANBO_INTERNAL);
@@ -964,5 +976,43 @@ public final class PayConfig {
         public List<Integer> getIds() {
             return ids;
         }
+    }
+
+    public static final class ServicePlanConfig {
+        private final int servId;
+        private final String period;
+        private final int money;
+        private final int timeType;
+
+        public ServicePlanConfig(int servId, String period, int money, int timeType) {
+            this.servId = servId;
+            this.period = period;
+            this.money = money;
+            this.timeType = timeType;
+        }
+
+        public int getServId() { return servId; }
+        public String getPeriod() { return period; }
+        public int getMoney() { return money; }
+        public int getTimeType() { return timeType; }
+    }
+
+    public static final class ServiceGroupConfig {
+        private final String groupName;
+        private final List<ServicePlanConfig> plans;
+        private final Boolean smsEnabled;
+        private final String intro;
+
+        public ServiceGroupConfig(String groupName, List<ServicePlanConfig> plans, Boolean smsEnabled, String intro) {
+            this.groupName = groupName;
+            this.plans = plans;
+            this.smsEnabled = smsEnabled;
+            this.intro = intro;
+        }
+
+        public String getGroupName() { return groupName; }
+        public List<ServicePlanConfig> getPlans() { return plans; }
+        public Boolean getSmsEnabled() { return smsEnabled; }
+        public String getIntro() { return intro; }
     }
 }
