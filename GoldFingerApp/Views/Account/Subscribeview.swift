@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct SubscribeView: View {
-    @State private var serviceList: [ServiceConfig] = []
+    let user: User
+    @State private var groupList: [ServiceGroup] = []
 
     var body: some View {
         ZStack {
@@ -29,8 +30,8 @@ struct SubscribeView: View {
 
                     // 服务列表
                     LazyVStack(spacing: 12) {
-                        ForEach(serviceList) { service in
-                            NavigationLink(destination: ServiceView(service: service)) {
+                        ForEach(groupList) { group in
+                            NavigationLink(destination: ServiceView(group: group, user: user)) {
                                 HStack(spacing: 16) {
                                     // 左侧图标
                                     ZStack {
@@ -44,13 +45,15 @@ struct SubscribeView: View {
 
                                     // 中间文字
                                     VStack(alignment: .leading, spacing: 6) {
-                                        Text(service.name ?? "未知套餐")
+                                        Text(group.groupName)
                                             .font(.subheadline)
                                             .fontWeight(.bold)
                                             .foregroundStyle(.white)
                                             .multilineTextAlignment(.leading)
-                                        if let money = service.money {
-                                            Text("¥\(money)")
+                                        // 显示价格范围
+                                        let prices = group.plans.map { $0.money }
+                                        if let minPrice = prices.min(), let maxPrice = prices.max() {
+                                            Text(minPrice == maxPrice ? "¥\(minPrice)" : "¥\(minPrice) ~ ¥\(maxPrice)")
                                                 .font(.caption)
                                                 .fontWeight(.semibold)
                                                 .foregroundStyle(.yellow.opacity(0.8))
@@ -90,8 +93,8 @@ struct SubscribeView: View {
         .onAppear {
             Task {
                 do {
-                    let response = try await UserService.shares.getAllAvailableServices()
-                    serviceList = response.servicelist ?? []
+                    let response = try await UserService.shares.getAllServiceGroups()
+                    groupList = response.groups ?? []
                 } catch {
                     print("服务列表加载失败: \(error)")
                 }
@@ -101,5 +104,5 @@ struct SubscribeView: View {
 }
 
 #Preview {
-    SubscribeView()
+    SubscribeView(user: User(uid: 1, username: "preview"))
 }

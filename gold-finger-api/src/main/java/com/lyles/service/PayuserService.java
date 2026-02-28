@@ -10,12 +10,16 @@ import com.lyles.entity.PayService;
 import com.lyles.config.PayConfig;
 import com.lyles.dto.PayServiceDetail;
 import com.lyles.repository.PayUserRepository;
+import com.lyles.repository.PayServiceRepository;
 
 @Service
 public class PayuserService {
 
     @Autowired
     private PayUserRepository payUserRepository;
+
+    @Autowired
+    private PayServiceRepository payServiceRepository;
 
     public Double getBalanceByUsername(String username){
         PayUser payUser = payUserRepository.findBalancebyUsername(username);
@@ -25,8 +29,16 @@ public class PayuserService {
         return null;
     }
 
+    public Double getBalanceByUid(int uid){
+        PayUser payUser = payUserRepository.findBalancebyUid(uid);
+        if(payUser != null){
+            return payUser.getBalance();
+        }
+        return null;
+    }
+
     public ArrayList<PayServiceDetail> getServicesByUid(int uid){
-        ArrayList<PayService> serviceList = payUserRepository.findServicesByUid(uid);
+        ArrayList<PayService> serviceList = payServiceRepository.findServicesByUid(uid);
         ArrayList<PayServiceDetail> detailedList = new ArrayList<>();
 
         if (serviceList != null) {
@@ -58,11 +70,22 @@ public class PayuserService {
                 }
             }
 
-            if(detailedList != null){
-                return detailedList;
-            }
-            return null;
+            return detailedList;
         }
         return null;
+    }
+
+    public PayService getActiveServiceByUidAndServid(int uid, int ps_servid){
+        ArrayList<PayService> serviceList = payServiceRepository.findServiceByUidAndServid(uid, ps_servid);
+        if(serviceList.size() > 1){
+            throw new RuntimeException("uid=" + uid + " 存在多条有效服务记录");
+        }
+        else if(serviceList.size() == 0){
+            return null;
+        }
+        else{
+            PayService activeService = serviceList.get(0);
+            return activeService;
+        }
     }
 }

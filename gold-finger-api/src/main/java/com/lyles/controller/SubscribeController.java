@@ -7,14 +7,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lyles.service.SubscribeService;
+import com.lyles.entity.PayService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.lyles.config.PayConfig;
 
 
 @RestController
@@ -24,22 +23,31 @@ public class SubscribeController {
     @Autowired
     private SubscribeService subscribeService;
 
-    @GetMapping("/all")
-    public ResponseEntity<?> getAllServices(){
+    @GetMapping("/groups")
+    public ResponseEntity<?> getServiceGroups() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("groups", subscribeService.findAllServiceGroups());
+        return ResponseEntity.ok(response);
+    }
 
-        ArrayList<PayConfig.ServiceConfig> availableServiceList = new ArrayList<>();
-        availableServiceList = subscribeService.FindAllAvailableService();
+    @PostMapping("/subscribe")
+    public ResponseEntity<?> subscribe(
+            @RequestParam int uid,
+            @RequestParam int ps_servid,
+            @RequestParam int timeType) {
 
         Map<String, Object> response = new HashMap<>();
 
-        if(availableServiceList != null){
+        try {
+            PayService newService = subscribeService.subscribeService(uid, ps_servid, timeType);
             response.put("success", true);
-            response.put("servicelist", availableServiceList);
+            response.put("service", newService);
             return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(400).body(response);
         }
-        response.put("success", false);
-        response.put("message", "未找到服务列表");
-        return ResponseEntity.status(404).body(response);
     }
-    
 }

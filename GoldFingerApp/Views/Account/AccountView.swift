@@ -96,7 +96,7 @@ struct AccountView: View {
                             .fontWeight(.bold)
                             .foregroundStyle(.white)
                         Spacer()
-                        NavigationLink(destination: SubscribeView()) {
+                        NavigationLink(destination: SubscribeView(user: user)) {
                             HStack(spacing: 4) {
                                 Image(systemName: "plus")
                                     .font(.caption)

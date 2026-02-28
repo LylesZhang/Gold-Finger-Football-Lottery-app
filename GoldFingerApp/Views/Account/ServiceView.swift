@@ -1,22 +1,24 @@
 import SwiftUI
 
 struct ServiceView: View {
-    let service: ServiceConfig
+    let group: ServiceGroup
+    let user: User
 
-    private var timeTypeName: String {
-        switch service.timeType {
-        case 1: return "天"
-        case 2: return "月"
-        case 3: return "年"
-        case 4: return "一季度"
-        case 5: return "半年"
-        default: return "未知"
-        }
+    @State private var selectedPlan: ServicePlan
+    @State private var isLoading = false
+    @State private var showAlert = false
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
+
+    init(group: ServiceGroup, user: User) {
+        self.group = group
+        self.user = user
+        _selectedPlan = State(initialValue: group.plans.first!)
     }
 
     // 去除简单HTML标签，仅用于展示
     private var cleanIntro: String {
-        guard let raw = service.intro else { return "" }
+        guard let raw = group.intro else { return "" }
         return raw.replacing(/<[^>]+>/, with: "")
     }
 
@@ -51,26 +53,53 @@ struct ServiceView: View {
                                     .foregroundStyle(.yellow)
                             }
 
-                            Text(service.name ?? "未知套餐")
+                            Text(group.groupName)
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .foregroundStyle(.white)
                                 .multilineTextAlignment(.center)
 
-                            if let money = service.money {
-                                HStack(alignment: .bottom, spacing: 4) {
-                                    Text("¥")
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .foregroundStyle(.yellow.opacity(0.8))
-                                        .padding(.bottom, 4)
-                                    Text("\(money)")
-                                        .font(.system(size: 44, weight: .bold))
-                                        .foregroundStyle(.yellow)
-                                    Text("/ \(timeTypeName)")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.yellow.opacity(0.6))
-                                        .padding(.bottom, 6)
+                            // 套餐选择器
+                            HStack(spacing: 10) {
+                                ForEach(group.plans) { plan in
+                                    Button {
+                                        selectedPlan = plan
+                                    } label: {
+                                        VStack(spacing: 4) {
+                                            Text(plan.period)
+                                                .font(.caption)
+                                                .fontWeight(.semibold)
+                                            Text("¥\(plan.money)")
+                                                .font(.subheadline)
+                                                .fontWeight(.bold)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(selectedPlan.id == plan.id
+                                                      ? Color.yellow
+                                                      : Color.white.opacity(0.1))
+                                        )
+                                        .foregroundStyle(selectedPlan.id == plan.id ? .black : .white)
+                                    }
                                 }
+                            }
+                            .padding(.horizontal, 4)
+
+                            // 当前选中价格大字展示
+                            HStack(alignment: .bottom, spacing: 4) {
+                                Text("¥")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundStyle(.yellow.opacity(0.8))
+                                    .padding(.bottom, 4)
+                                Text("\(selectedPlan.money)")
+                                    .font(.system(size: 44, weight: .bold))
+                                    .foregroundStyle(.yellow)
+                                Text("/ \(selectedPlan.period)")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.yellow.opacity(0.6))
+                                    .padding(.bottom, 6)
                             }
                         }
                         .padding(28)
@@ -92,7 +121,7 @@ struct ServiceView: View {
                         infoRow(
                             icon: "clock.fill",
                             label: "计费周期",
-                            value: timeTypeName
+                            value: selectedPlan.period
                         )
 
                         // 短信通知
@@ -109,14 +138,14 @@ struct ServiceView: View {
                                 Text("短信通知")
                                     .font(.caption)
                                     .foregroundStyle(.white.opacity(0.5))
-                                Text(service.smsEnabled == true ? "支持" : "不支持")
+                                Text(group.smsEnabled == true ? "支持" : "不支持")
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
                                     .foregroundStyle(.white)
                             }
                             Spacer()
-                            Image(systemName: service.smsEnabled == true ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                .foregroundStyle(service.smsEnabled == true ? .green : .white.opacity(0.25))
+                            Image(systemName: group.smsEnabled == true ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundStyle(group.smsEnabled == true ? .green : .white.opacity(0.25))
                                 .font(.system(size: 20))
                         }
                         .padding(.horizontal, 18)
@@ -156,22 +185,47 @@ struct ServiceView: View {
 
                     // 立即订阅按钮
                     Button {
-                        // TODO: 订阅功能
+                        Task {
+                            isLoading = true
+                            do {
+                                try await UserService.shares.subscribeService(uid: user.uid, psServid: selectedPlan.servId, timeType: selectedPlan.timeType)
+                                alertTitle = "订阅成功"
+                                alertMessage = "已成功订阅「\(group.groupName) · \(selectedPlan.period)」"
+                            } catch {
+                                alertTitle = "订阅失败"
+                                alertMessage = error.localizedDescription
+                            }
+                            isLoading = false
+                            showAlert = true
+                        }
                     } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "crown.fill")
-                            Text("立即订阅")
-                                .fontWeight(.bold)
+                        Group {
+                            if isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                            } else {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "crown.fill")
+                                    Text("立即订阅")
+                                        .fontWeight(.bold)
+                                }
+                            }
                         }
                         .font(.headline)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(Color.yellow)
+                        .frame(height: 56)
+                        .background(isLoading ? Color.yellow.opacity(0.6) : Color.yellow)
                         .foregroundStyle(.black)
                         .cornerRadius(16)
                         .shadow(color: .yellow.opacity(0.3), radius: 10, x: 0, y: 5)
                     }
+                    .disabled(isLoading)
                     .padding(.horizontal, 20)
+                    .alert(alertTitle, isPresented: $showAlert) {
+                        Button("确定", role: .cancel) {}
+                    } message: {
+                        Text(alertMessage)
+                    }
 
                     Spacer(minLength: 40)
                 }
@@ -223,16 +277,17 @@ struct ServiceView: View {
 
 #Preview {
     NavigationStack {
-        ServiceView(service: ServiceConfig(
-            id: 41,
-            name: "金手指日报(1200元/年)",
-            money: 180,
-            timeType: 4,
-            enabled: true,
-            smsEnabled: false,
-            intro: "《金手指日报》每日提供传统足彩、竞彩足球数据分析！",
-            user: nil,
-            discount: nil
-        ))
+        ServiceView(
+            group: ServiceGroup(
+                groupName: "金手指日报",
+                plans: [
+                    ServicePlan(servId: 41, period: "半年", money: 700, timeType: 5),
+                    ServicePlan(servId: 41, period: "年度", money: 1400, timeType: 3)
+                ],
+                smsEnabled: false,
+                intro: "《金手指日报》每日提供传统足彩、竞彩足球、竞彩篮球、北京单场，四大彩种的比赛数据、盘口、赔率分析！"
+            ),
+            user: User(uid: 1, username: "preview")
+        )
     }
 }
