@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct LoginView: View{
+    var onLogin: (User) -> Void = { _ in }
     @StateObject private var loginViewModel = LoginViewModel()
-    @State private var isLogin = false
 
     var body: some View{
         NavigationStack{
@@ -144,8 +144,9 @@ struct LoginView: View{
                             Button {
                                 Task {
                                     try await loginViewModel.Login()
-                                    if loginViewModel.loginMessage.contains("成功") {
-                                        isLogin = true
+                                    if loginViewModel.loginMessage.contains("成功"),
+                                       let user = loginViewModel.loginUser {
+                                        onLogin(user)
                                     }
                                 }
                             } label: {
@@ -176,13 +177,7 @@ struct LoginView: View{
                     }
                 }
             }
-            .navigationDestination(isPresented: $isLogin) {
-                if let user = loginViewModel.loginUser {
-                    AccountView(user: user)
-                }
-            }
             .onAppear {
-                isLogin = false
                 loginViewModel.loginMessage = ""
                 loginViewModel.loginUser = nil
                 Task {

@@ -4,10 +4,17 @@ import SwiftUI
 struct GoldFingerAppApp: App {
     @State private var showUpdateAlert = false
     @State private var updateInfo: AppVersion? = nil
+    @State private var loggedInUser: User? = nil
 
     var body: some Scene {
         WindowGroup {
-            LoginView()
+            if let user = loggedInUser {
+                // 登录成功后，直接替换成 MainTabView，不走 NavigationStack push
+                MainTabView(user: user)
+            } else {
+                LoginView(onLogin: { user in
+                    loggedInUser = user
+                })
                 .onAppear {
                     checkForUpdate()
                 }
@@ -21,6 +28,7 @@ struct GoldFingerAppApp: App {
                 } message: { info in
                     Text("最新版本：\(info.version)\n\(info.releaseNotes)")
                 }
+            }
         }
     }
 

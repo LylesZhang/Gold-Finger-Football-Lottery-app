@@ -10,10 +10,10 @@ struct ServiceView: View {
     @State private var alertTitle = ""
     @State private var alertMessage = ""
 
-    init(group: ServiceGroup, user: User) {
+    init(group: ServiceGroup, user: User, initialPlan: ServicePlan? = nil) {
         self.group = group
         self.user = user
-        _selectedPlan = State(initialValue: group.plans.first!)
+        _selectedPlan = State(initialValue: initialPlan ?? group.plans.first!)
     }
 
     // 去除简单HTML标签，仅用于展示
