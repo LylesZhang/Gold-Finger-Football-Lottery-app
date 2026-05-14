@@ -24,7 +24,7 @@ struct ServiceView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.08, green: 0.08, blue: 0.10)
+            Color("AppBackground")
                 .ignoresSafeArea()
 
             ScrollView {
@@ -56,7 +56,7 @@ struct ServiceView: View {
                             Text(group.groupName)
                                 .font(.title2)
                                 .fontWeight(.bold)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color("AppTextPrimary"))
                                 .multilineTextAlignment(.center)
 
                             // 套餐选择器
@@ -79,9 +79,9 @@ struct ServiceView: View {
                                             RoundedRectangle(cornerRadius: 10)
                                                 .fill(selectedPlan.id == plan.id
                                                       ? Color.yellow
-                                                      : Color.white.opacity(0.1))
+                                                      : Color("AppInputBackground"))
                                         )
-                                        .foregroundStyle(selectedPlan.id == plan.id ? .black : .white)
+                                        .foregroundStyle(selectedPlan.id == plan.id ? Color.black : Color("AppTextPrimary"))
                                     }
                                 }
                             }
@@ -112,7 +112,7 @@ struct ServiceView: View {
                             Text("套餐详情")
                                 .font(.headline)
                                 .fontWeight(.bold)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color("AppTextPrimary"))
                             Spacer()
                         }
                         .padding(.horizontal, 20)
@@ -137,11 +137,11 @@ struct ServiceView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("短信通知")
                                     .font(.caption)
-                                    .foregroundStyle(.white.opacity(0.5))
+                                    .foregroundStyle(Color("AppTextSecondary"))
                                 Text(group.smsEnabled == true ? "支持" : "不支持")
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color("AppTextPrimary"))
                             }
                             Spacer()
                             Image(systemName: group.smsEnabled == true ? "checkmark.circle.fill" : "xmark.circle.fill")
@@ -152,7 +152,7 @@ struct ServiceView: View {
                         .padding(.vertical, 14)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(Color.white.opacity(0.06))
+                                .fill(Color("AppDivider"))
                         )
                         .padding(.horizontal, 20)
                     }
@@ -164,20 +164,20 @@ struct ServiceView: View {
                                 Text("服务介绍")
                                     .font(.headline)
                                     .fontWeight(.bold)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color("AppTextPrimary"))
                                 Spacer()
                             }
                             .padding(.horizontal, 20)
 
                             Text(cleanIntro)
                                 .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(Color("AppTextSecondary"))
                                 .lineSpacing(6)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(18)
                                 .background(
                                     RoundedRectangle(cornerRadius: 14)
-                                        .fill(Color.white.opacity(0.06))
+                                        .fill(Color("AppDivider"))
                                 )
                                 .padding(.horizontal, 20)
                         }
@@ -257,11 +257,11 @@ struct ServiceView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(Color("AppTextSecondary"))
                 Text(value)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color("AppTextPrimary"))
             }
             Spacer()
         }
@@ -269,7 +269,7 @@ struct ServiceView: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.06))
+                .fill(Color("AppDivider"))
         )
         .padding(.horizontal, 20)
     }

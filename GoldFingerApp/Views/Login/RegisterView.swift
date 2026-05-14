@@ -6,7 +6,7 @@ struct RegisterView: View{
 
     var body: some View{
         ZStack {
-            Color(red: 0.08, green: 0.08, blue: 0.10)
+            Color("AppBackground")
                 .ignoresSafeArea()
 
             ScrollView {
@@ -33,7 +33,7 @@ struct RegisterView: View{
                             .foregroundStyle(.yellow)
                         Text("加入足坛金手指")
                             .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(Color("AppTextSecondary"))
                     }
                     .padding(.top, 60)
 
@@ -45,18 +45,18 @@ struct RegisterView: View{
                             Text("用户名")
                                 .font(.caption)
                                 .fontWeight(.semibold)
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(Color("AppTextSecondary"))
                             TextField("请输入用户名", text: $registerViewModel.username)
                                 .textFieldStyle(.plain)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color("AppTextPrimary"))
                                 .padding(14)
-                                .background(Color.white.opacity(0.08))
+                                .background(Color("AppInputBackground"))
                                 .cornerRadius(12)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                        .stroke(Color("AppDivider"), lineWidth: 1)
                                 )
                         }
 
@@ -65,18 +65,18 @@ struct RegisterView: View{
                             Text("密码")
                                 .font(.caption)
                                 .fontWeight(.semibold)
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(Color("AppTextSecondary"))
                             SecureField("请输入密码", text: $registerViewModel.password)
                                 .textFieldStyle(.plain)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color("AppTextPrimary"))
                                 .padding(14)
-                                .background(Color.white.opacity(0.08))
+                                .background(Color("AppInputBackground"))
                                 .cornerRadius(12)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                        .stroke(Color("AppDivider"), lineWidth: 1)
                                 )
                         }
 
@@ -94,7 +94,7 @@ struct RegisterView: View{
                     .padding(24)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.white.opacity(0.05))
+                            .fill(Color("AppDivider"))
                     )
                     .shadow(color: .black.opacity(0.3), radius: 12, x: 0, y: 6)
                     .padding(.horizontal, 20)
@@ -128,12 +128,12 @@ struct RegisterView: View{
                                 .fontWeight(.semibold)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 16)
-                                .background(Color.white.opacity(0.08))
-                                .foregroundStyle(.white.opacity(0.8))
+                                .background(Color("AppInputBackground"))
+                                .foregroundStyle(Color("AppTextSecondary"))
                                 .cornerRadius(14)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 14)
-                                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                                        .stroke(Color("AppDivider"), lineWidth: 1)
                                 )
                         }
                     }

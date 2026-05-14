@@ -6,7 +6,7 @@ struct SubscribeView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.08, green: 0.08, blue: 0.10)
+            Color("AppBackground")
                 .ignoresSafeArea()
 
             ScrollView {
@@ -20,10 +20,10 @@ struct SubscribeView: View {
                         Text("选择订阅套餐")
                             .font(.title2)
                             .fontWeight(.bold)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color("AppTextPrimary"))
                         Text("专业数据，助您制胜")
                             .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(Color("AppTextSecondary"))
                     }
                     .padding(.top, 20)
                     .padding(.bottom, 8)
@@ -48,7 +48,7 @@ struct SubscribeView: View {
                                         Text(group.groupName)
                                             .font(.subheadline)
                                             .fontWeight(.bold)
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(Color("AppTextPrimary"))
                                             .multilineTextAlignment(.leading)
                                         // 显示价格范围
                                         let prices = group.plans.map { $0.money }
@@ -64,13 +64,13 @@ struct SubscribeView: View {
 
                                     Image(systemName: "chevron.right")
                                         .font(.caption)
-                                        .foregroundStyle(.white.opacity(0.3))
+                                        .foregroundStyle(Color("AppTextTertiary"))
                                 }
                                 .padding(.horizontal, 18)
                                 .padding(.vertical, 16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.06))
+                                        .fill(Color("AppDivider"))
                                 )
                             }
                         }

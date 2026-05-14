@@ -8,12 +8,12 @@ struct MainTabView: View {
         // 设置底部导航栏样式为深色
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(red: 0.10, green: 0.10, blue: 0.12, alpha: 1)
+        appearance.backgroundColor = UIColor(named: "AppTabBar") ?? UIColor(red: 0.10, green: 0.10, blue: 0.12, alpha: 1)
 
         let itemAppearance = UITabBarItemAppearance()
-        itemAppearance.normal.iconColor = UIColor.white.withAlphaComponent(0.4)
+        itemAppearance.normal.iconColor = UIColor(named: "AppTextSecondary") ?? UIColor.white.withAlphaComponent(0.4)
         itemAppearance.normal.titleTextAttributes = [
-            .foregroundColor: UIColor.white.withAlphaComponent(0.4)
+            .foregroundColor: UIColor(named: "AppTextSecondary") ?? UIColor.white.withAlphaComponent(0.4)
         ]
         appearance.stackedLayoutAppearance = itemAppearance
 
@@ -31,20 +31,20 @@ struct MainTabView: View {
                 Label("首页", systemImage: "house.fill")
             }
 
-            // 赛事中心（暂无交互）
+            // 点播
             NavigationStack {
-                placeholderView(title: "赛事中心", icon: "calendar")
+                OnDemandView()
             }
             .tabItem {
-                Label("赛事中心", systemImage: "calendar")
+                Label("点播", systemImage: "play.circle.fill")
             }
 
-            // 我的订阅（暂无交互）
+            // 金手指日报（暂无交互）
             NavigationStack {
-                placeholderView(title: "我的订阅", icon: "star.fill")
+                placeholderView(title: "金手指日报", icon: "newspaper.fill")
             }
             .tabItem {
-                Label("我的订阅", systemImage: "star")
+                Label("金手指日报", systemImage: "newspaper.fill")
             }
 
             // 个人中心
@@ -63,16 +63,16 @@ struct MainTabView: View {
         VStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 48))
-                .foregroundStyle(.white.opacity(0.2))
+                .foregroundStyle(Color("AppTextTertiary"))
             Text(title)
                 .font(.headline)
-                .foregroundStyle(.white.opacity(0.3))
+                .foregroundStyle(Color("AppTextTertiary"))
             Text("敬请期待")
                 .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.2))
+                .foregroundStyle(Color("AppTextTertiary"))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(red: 0.08, green: 0.08, blue: 0.10).ignoresSafeArea())
+        .background(Color("AppBackground").ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

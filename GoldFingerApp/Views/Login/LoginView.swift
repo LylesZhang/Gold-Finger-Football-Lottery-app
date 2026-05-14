@@ -7,7 +7,7 @@ struct LoginView: View{
     var body: some View{
         NavigationStack{
             ZStack {
-                Color(red: 0.08, green: 0.08, blue: 0.10)
+                Color("AppBackground")
                     .ignoresSafeArea()
 
                 ScrollView {
@@ -34,7 +34,7 @@ struct LoginView: View{
                                 .foregroundStyle(.yellow)
                             Text("专业足彩数据分析平台")
                                 .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.5))
+                                .foregroundStyle(Color("AppTextSecondary"))
                         }
                         .padding(.top, 60)
 
@@ -46,18 +46,18 @@ struct LoginView: View{
                                 Text("用户名")
                                     .font(.caption)
                                     .fontWeight(.semibold)
-                                    .foregroundStyle(.white.opacity(0.6))
+                                    .foregroundStyle(Color("AppTextSecondary"))
                                 TextField("请输入用户名", text: $loginViewModel.username)
                                     .textFieldStyle(.plain)
                                     .textInputAutocapitalization(.never)
                                     .autocorrectionDisabled()
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color("AppTextPrimary"))
                                     .padding(14)
-                                    .background(Color.white.opacity(0.08))
+                                    .background(Color("AppInputBackground"))
                                     .cornerRadius(12)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                            .stroke(Color("AppDivider"), lineWidth: 1)
                                     )
                             }
 
@@ -66,18 +66,18 @@ struct LoginView: View{
                                 Text("密码")
                                     .font(.caption)
                                     .fontWeight(.semibold)
-                                    .foregroundStyle(.white.opacity(0.6))
+                                    .foregroundStyle(Color("AppTextSecondary"))
                                 SecureField("请输入密码", text: $loginViewModel.password)
                                     .textFieldStyle(.plain)
                                     .textInputAutocapitalization(.never)
                                     .autocorrectionDisabled()
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color("AppTextPrimary"))
                                     .padding(14)
-                                    .background(Color.white.opacity(0.08))
+                                    .background(Color("AppInputBackground"))
                                     .cornerRadius(12)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                            .stroke(Color("AppDivider"), lineWidth: 1)
                                     )
                             }
 
@@ -86,19 +86,19 @@ struct LoginView: View{
                                 Text("验证码")
                                     .font(.caption)
                                     .fontWeight(.semibold)
-                                    .foregroundStyle(.white.opacity(0.6))
+                                    .foregroundStyle(Color("AppTextSecondary"))
                                 HStack(spacing: 12) {
                                     TextField("请输入验证码", text: $loginViewModel.captchaCode)
                                         .textFieldStyle(.plain)
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color("AppTextPrimary"))
                                         .padding(14)
-                                        .background(Color.white.opacity(0.08))
+                                        .background(Color("AppInputBackground"))
                                         .cornerRadius(12)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 12)
-                                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                                .stroke(Color("AppDivider"), lineWidth: 1)
                                         )
 
                                     if let image = loginViewModel.captchaImage {
@@ -134,7 +134,7 @@ struct LoginView: View{
                         .padding(24)
                         .background(
                             RoundedRectangle(cornerRadius: 20)
-                                .fill(Color.white.opacity(0.05))
+                                .fill(Color("AppDivider"))
                         )
                         .shadow(color: .black.opacity(0.3), radius: 12, x: 0, y: 6)
                         .padding(.horizontal, 20)
@@ -163,7 +163,7 @@ struct LoginView: View{
                             NavigationLink(destination: RegisterView()) {
                                 HStack(spacing: 4) {
                                     Text("还没有账号？")
-                                        .foregroundStyle(.white.opacity(0.5))
+                                        .foregroundStyle(Color("AppTextSecondary"))
                                     Text("立即注册")
                                         .fontWeight(.semibold)
                                         .foregroundStyle(.yellow)
