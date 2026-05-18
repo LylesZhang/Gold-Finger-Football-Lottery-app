@@ -124,6 +124,26 @@ class UserService{
         }
     }
 
+    func getExperts() async throws -> [Expert] {
+        guard let url = URL(string: "https://www.maicai.cn/newportal.php?type=indextj") else {
+            throw APIError(message: "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode([Expert].self, from: data)
+    }
+
+    func getBanners() async throws -> [Announcement] {
+        guard let url = URL(string: "https://www.maicai.cn/newportal.php?type=appad") else {
+            throw APIError(message: "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode([Announcement].self, from: data)
+    }
+
     func getAllServiceGroups() async throws -> ServiceGroupResponse {
         guard let url = URL(string: "http://localhost:8080/api/service/groups") else {
             throw APIError(message: "Invalid URL")

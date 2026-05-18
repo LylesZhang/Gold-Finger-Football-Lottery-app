@@ -216,12 +216,7 @@ struct SubscriptionServiceView: View {
                 // 余额卡片
                 ZStack {
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(LinearGradient(
-                            colors: [Color(red: 0.12, green: 0.12, blue: 0.12),
-                                     Color(red: 0.20, green: 0.16, blue: 0.04)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
+                        .fill(Color("AppCard"))
                         .shadow(color: .yellow.opacity(0.25), radius: 12, x: 0, y: 6)
 
                     VStack(spacing: 12) {

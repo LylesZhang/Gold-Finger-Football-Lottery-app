@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import Kingfisher
 
 // 中奖喜报数据模型
 struct WinnerRecord: Identifiable {
@@ -10,23 +11,12 @@ struct WinnerRecord: Identifiable {
     let isNew: Bool
 }
 
-// 大神专家数据模型
-struct Expert: Identifiable {
-    let id = UUID()
-    let name: String
-    let title: String       // 职称，如 "《足彩金手指》首席编辑"
-    let hitRate: String     // 命中率，如 "33%"
-    let latestTip: String   // 最新推荐内容
-    let publishTime: String // 发布时间，如 "05-13 10:05"
-    let price: String       // 价格，如 "0宝" "38宝"
-    let avatarImage: String // 头像图片名（Assets 里的名字）
-}
 
 struct HomeView: View {
     let user: User
 
     @State private var currentBanner = 0
-    private let bannerImages = ["announcement1", "announcement2", "announcement3"]
+    @State private var banners: [Announcement] = []
     private let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 
     // 中奖喜报模拟数据
@@ -38,24 +28,7 @@ struct HomeView: View {
         WinnerRecord(tag: "[喜报]", title: "《埃罗指数》命中周日近70万大奖",           date: "04-21", isNew: false)
     ]
 
-    // 演武厅大神模拟数据
-    private let experts: [Expert] = [
-        Expert(name: "冷刀",     title: "《足彩金手指》首席编辑",       hitRate: "33%", latestTip: "[足彩]：防客出现反复，比利亚平优先",         publishTime: "05-13 10:05", price: "0宝",  avatarImage: "admin_gc"),
-        Expert(name: "晓万水宝", title: "《足彩金手指》特约编辑",       hitRate: "50%", latestTip: "[足彩]：主场强队状态回暖，本轮稳拿",         publishTime: "05-13 09:30", price: "28宝", avatarImage: "admin_xwsb"),
-        Expert(name: "李林",     title: "《足彩金手指》资深编辑",       hitRate: "58%", latestTip: "[竞足]：欧联收官战，强队主场把握大",         publishTime: "05-12 18:45", price: "18宝", avatarImage: "admin_ll"),
-        Expert(name: "所罗门",   title: "《足彩金手指》数据分析师",     hitRate: "62%", latestTip: "[足彩]：数据支撑下，客队翻盘概率极低",       publishTime: "05-12 16:20", price: "38宝", avatarImage: "admin_lmj"),
-        Expert(name: "曹明",     title: "《足彩金手指》编辑",           hitRate: "55%", latestTip: "[足彩]：3串1连续过关，今日继续出手",         publishTime: "05-13 11:30", price: "0宝",  avatarImage: "admin_cm"),
-        Expert(name: "吴建华",   title: "《足彩金手指》资深编辑",       hitRate: "67%", latestTip: "[足彩]：冷门赛段11连红难得，难点简化",       publishTime: "05-13 13:17", price: "38宝", avatarImage: "admin_wjh"),
-        Expert(name: "鬼手",     title: "《足彩金手指》特约分析师",     hitRate: "60%", latestTip: "[竞足]：意甲收官，榜首之争尘埃未定",         publishTime: "05-11 20:00", price: "28宝", avatarImage: "admin_gs"),
-        Expert(name: "下盘奇人", title: "王牌栏目《让球指数》创立者",   hitRate: "65%", latestTip: "[足彩]：让球指数异动，主队水位飞涨",         publishTime: "05-10 14:00", price: "48宝", avatarImage: "admin_xpqr"),
-        Expert(name: "临风",     title: "王牌栏目《盈亏指数》创立者",   hitRate: "67%", latestTip: "[竞足]：大黄蜂状态萎靡，让步连降还能反弹？", publishTime: "05-08 18:03", price: "0宝",  avatarImage: "admin_zlp"),
-        Expert(name: "十年一剑", title: "《足彩金手指》资深编辑",       hitRate: "56%", latestTip: "[足彩]：西甲末轮，保级队背水一战",           publishTime: "05-09 10:15", price: "18宝", avatarImage: "admin_snyj"),
-        Expert(name: "英系小王子", title: "英超专题分析师",              hitRate: "61%", latestTip: "[竞足]：英超豪门压轴战，主场优势明显",       publishTime: "05-08 09:00", price: "28宝", avatarImage: "admin_yxxwz"),
-        Expert(name: "高飞",     title: "《足彩金手指》编辑",           hitRate: "52%", latestTip: "[足彩]：德甲最后一轮，争冠热门不容有失",     publishTime: "05-07 15:30", price: "0宝",  avatarImage: "admin_pkzm"),
-        Expert(name: "波哥",     title: "《足彩金手指》资深编辑",       hitRate: "59%", latestTip: "[竞足]：法甲降级区混战，冷门出没请注意",     publishTime: "05-07 11:00", price: "18宝", avatarImage: "admin_bgkzc"),
-        Expert(name: "三水",     title: "足彩金手指资深编辑",           hitRate: "33%", latestTip: "[竞足]：聚焦法德崩终对决，此名利市",          publishTime: "05-07 09:30", price: "18宝", avatarImage: "admin_ss"),
-        Expert(name: "威廉王子", title: "《足彩金手指》特约编辑",       hitRate: "54%", latestTip: "[足彩]：欧冠决赛周边赛事，关注焦点转移效应", publishTime: "05-06 20:00", price: "38宝", avatarImage: "admin_wlwz")
-    ]
+    @State private var experts: [Expert] = []
 
 
     var body: some View {
@@ -73,6 +46,18 @@ struct HomeView: View {
         }
         .background(Color("AppBackground").ignoresSafeArea())
         .navigationBarHidden(true)
+        .task {
+            do {
+                banners = try await UserService.shares.getBanners()
+            } catch {
+                // 加载失败时轮播区域保持空白，不影响其他内容
+            }
+            do {
+                experts = try await UserService.shares.getExperts()
+            } catch {
+                // 加载失败时演武厅保持空白，不影响其他内容
+            }
+        }
     }
 
     // MARK: - 顶部导航栏
@@ -122,33 +107,47 @@ struct HomeView: View {
     // MARK: - 轮播图
     private var announcementBar: some View {
         ZStack(alignment: .bottom) {
-            TabView(selection: $currentBanner) {
-                ForEach(bannerImages.indices, id: \.self) { index in
-                    Image(bannerImages[index])
-                        .resizable()
-                        .scaledToFill()
-                        .tag(index)
+            if banners.isEmpty {
+                // 加载中占位
+                Rectangle()
+                    .fill(Color("AppInputBackground"))
+                    .frame(height: 160)
+                    .overlay(ProgressView().tint(.yellow))
+            } else {
+                TabView(selection: $currentBanner) {
+                    ForEach(banners.indices, id: \.self) { index in
+                        KFImage(URL(string: banners[index].image))
+                            .placeholder {
+                                Rectangle()
+                                    .fill(Color("AppInputBackground"))
+                                    .overlay(ProgressView().tint(.yellow))
+                            }
+                            .resizable()
+                            .scaledToFill()
+                            .tag(index)
+                    }
                 }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 160)
-            .clipped()
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: 160)
+                .clipped()
 
-            // 底部小圆点指示器
-            HStack(spacing: 6) {
-                ForEach(bannerImages.indices, id: \.self) { index in
-                    Circle()
-                        .fill(currentBanner == index ? Color.yellow : Color.white.opacity(0.5))
-                        .frame(width: currentBanner == index ? 8 : 6,
-                               height: currentBanner == index ? 8 : 6)
-                        .animation(.easeInOut(duration: 0.2), value: currentBanner)
+                // 底部小圆点指示器
+                HStack(spacing: 6) {
+                    ForEach(banners.indices, id: \.self) { index in
+                        Circle()
+                            .fill(currentBanner == index ? Color.yellow : Color.white.opacity(0.5))
+                            .frame(width: currentBanner == index ? 8 : 6,
+                                   height: currentBanner == index ? 8 : 6)
+                            .animation(.easeInOut(duration: 0.2), value: currentBanner)
+                    }
                 }
+                .padding(.bottom, 10)
             }
-            .padding(.bottom, 10)
         }
         .onReceive(timer) { _ in
+            guard !banners.isEmpty else { return }
             withAnimation(.easeInOut(duration: 0.5)) {
-                currentBanner = (currentBanner + 1) % bannerImages.count
+                currentBanner = (currentBanner + 1) % banners.count
             }
         }
     }
@@ -282,22 +281,20 @@ struct HomeView: View {
 
     // 头像视图
     private func expertAvatar(_ expert: Expert) -> some View {
-        ZStack {
-            Circle()
-                .fill(Color("AppInputBackground"))
-                .frame(width: 56, height: 56)
-            if UIImage(named: expert.avatarImage) != nil {
-                Image(expert.avatarImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 56, height: 56)
-                    .clipShape(Circle())
-            } else {
-                Image(systemName: "person.fill")
-                    .font(.system(size: 26))
-                    .foregroundStyle(Color("AppTextSecondary"))
+        KFImage(URL(string: expert.avatarURL))
+            .placeholder {
+                ZStack {
+                    Circle()
+                        .fill(Color("AppInputBackground"))
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 26))
+                        .foregroundStyle(Color("AppTextSecondary"))
+                }
             }
-        }
+            .resizable()
+            .scaledToFill()
+            .frame(width: 56, height: 56)
+            .clipShape(Circle())
     }
 
     // 推荐卡片
@@ -326,7 +323,7 @@ struct HomeView: View {
             }
 
             // 推荐内容
-            Text(expert.latestTip)
+            Text("[\(expert.prefix)]：\(expert.latestTip)")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color("AppTextPrimary"))
                 .lineLimit(2)

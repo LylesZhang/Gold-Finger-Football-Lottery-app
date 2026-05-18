@@ -1,4 +1,5 @@
 import SwiftUI
+import Kingfisher
 
 @main
 struct GoldFingerAppApp: App {
@@ -6,6 +7,11 @@ struct GoldFingerAppApp: App {
     @State private var updateInfo: AppVersion? = nil
     @State private var loggedInUser: User? = nil
     @AppStorage("prefersDarkMode") private var prefersDarkMode: Bool = true
+
+    init() {
+        KingfisherManager.shared.cache.diskStorage.config.expiration = .seconds(3600)
+        KingfisherManager.shared.cache.memoryStorage.config.expiration = .seconds(600)
+    }
 
     var body: some Scene {
         WindowGroup {
