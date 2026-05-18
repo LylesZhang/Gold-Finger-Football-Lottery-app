@@ -5,6 +5,7 @@ import Kingfisher
 struct HomeView: View {
     let user: User
     var switchToAccount: () -> Void = {}
+    var switchToOnDemand: () -> Void = {}
 
     @State private var currentBanner = 0
     @State private var banners: [Announcement] = []
@@ -197,7 +198,7 @@ struct HomeView: View {
                 .background(Color("AppInputBackground"))
 
             // 查看更多
-            NavigationLink(destination: OnDemandView()) {
+            Button(action: switchToOnDemand) {
                 Text("更多 >")
                     .font(.system(size: 13))
                     .foregroundStyle(.yellow)

@@ -27,7 +27,7 @@ struct MainTabView: View {
         TabView(selection: $selectedTab) {
             // 首页
             NavigationStack {
-                HomeView(user: user, switchToAccount: { selectedTab = 3 })
+                HomeView(user: user, switchToAccount: { selectedTab = 3 }, switchToOnDemand: { selectedTab = 1 })
             }
             .tabItem { Label("首页", systemImage: "house.fill") }
             .tag(0)
