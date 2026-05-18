@@ -21,39 +21,37 @@ struct MainTabView: View {
         UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 
+    @State private var selectedTab = 0
+
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             // 首页
             NavigationStack {
-                HomeView(user: user)
+                HomeView(user: user, switchToAccount: { selectedTab = 3 })
             }
-            .tabItem {
-                Label("首页", systemImage: "house.fill")
-            }
+            .tabItem { Label("首页", systemImage: "house.fill") }
+            .tag(0)
 
             // 点播
             NavigationStack {
                 OnDemandView()
             }
-            .tabItem {
-                Label("点播", systemImage: "play.circle.fill")
-            }
+            .tabItem { Label("点播", systemImage: "play.circle.fill") }
+            .tag(1)
 
-            // 金手指日报（暂无交互）
+            // 金手指日报
             NavigationStack {
                 placeholderView(title: "金手指日报", icon: "newspaper.fill")
             }
-            .tabItem {
-                Label("金手指日报", systemImage: "newspaper.fill")
-            }
+            .tabItem { Label("金手指日报", systemImage: "newspaper.fill") }
+            .tag(2)
 
             // 个人中心
             NavigationStack {
                 AccountView(user: user)
             }
-            .tabItem {
-                Label("个人中心", systemImage: "person.fill")
-            }
+            .tabItem { Label("个人中心", systemImage: "person.fill") }
+            .tag(3)
         }
         .tint(.yellow)
     }

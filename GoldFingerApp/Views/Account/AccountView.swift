@@ -192,7 +192,7 @@ struct AccountView: View {
             Group {
                 Text("Copyright © 2018-2026 MaiCai.CN")
                 Text("客服热线：15388265142")
-                Text("Author: ZhangChun")
+                Text("Author: ZhangChun & ZhangZhiyuan")
                 Text("Version: v1.2.0")
             }
             .font(.system(size: 12))

@@ -2,41 +2,24 @@ import SwiftUI
 import Combine
 import Kingfisher
 
-// 中奖喜报数据模型
-struct WinnerRecord: Identifiable {
-    let id = UUID()
-    let tag: String      // 分类标签，如 [喜报] [足彩]
-    let title: String    // 标题内容
-    let date: String     // 日期，如 05-08
-    let isNew: Bool
-}
-
-
 struct HomeView: View {
     let user: User
+    var switchToAccount: () -> Void = {}
 
     @State private var currentBanner = 0
     @State private var banners: [Announcement] = []
     private let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 
-    // 中奖喜报模拟数据
-    private let winners: [WinnerRecord] = [
-        WinnerRecord(tag: "[足彩]", title: "2025/26赛季五大联赛积分榜（截至1月28日）", date: "05-08", isNew: true),
-        WinnerRecord(tag: "[喜报]", title: "编辑曹明3串1连续过关",                     date: "05-08", isNew: false),
-        WinnerRecord(tag: "[喜报]", title: "编辑曹明周二出手3串1过关",                 date: "05-06", isNew: false),
-        WinnerRecord(tag: "[喜报]", title: "《欧数据对比值》错失500万大奖",            date: "05-05", isNew: false),
-        WinnerRecord(tag: "[喜报]", title: "《埃罗指数》命中周日近70万大奖",           date: "04-21", isNew: false)
-    ]
-
+    @State private var winners: [OnDemandArticle] = []
     @State private var experts: [Expert] = []
 
 
     var body: some View {
         VStack(spacing: 0) {
             topBar
-            announcementBar
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
+                    announcementBar
                     winnersSection
                     expertsSection
                 }
@@ -49,14 +32,13 @@ struct HomeView: View {
         .task {
             do {
                 banners = try await UserService.shares.getBanners()
-            } catch {
-                // 加载失败时轮播区域保持空白，不影响其他内容
-            }
+            } catch {}
+            do {
+                winners = try await UserService.shares.getOnDemandArticles(newsId: 321)
+            } catch {}
             do {
                 experts = try await UserService.shares.getExperts()
-            } catch {
-                // 加载失败时演武厅保持空白，不影响其他内容
-            }
+            } catch {}
         }
     }
 
@@ -93,7 +75,7 @@ struct HomeView: View {
                             .offset(x: 2, y: -2)
                     }
                 }
-                Button(action: {}) {
+                Button(action: switchToAccount) {
                     Image(systemName: "person.circle")
                         .font(.system(size: 22))
                         .foregroundStyle(Color("AppTextPrimary"))
@@ -172,19 +154,19 @@ struct HomeView: View {
                 .background(Color("AppInputBackground"))
 
             // 喜报列表
-            ForEach(Array(winners.enumerated()), id: \.element.id) { index, winner in
+            let today = String(Date().description.prefix(10))
+            ForEach(Array(winners.prefix(5).enumerated()), id: \.element.id) { index, article in
                 VStack(spacing: 0) {
                     HStack(alignment: .center, spacing: 6) {
-                        // 左侧：标签 + 标题
                         HStack(spacing: 4) {
-                            Text(winner.tag)
+                            Text("[\(article.prefix)]")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundStyle(.yellow)
-                            Text(winner.title)
+                            Text(article.title)
                                 .font(.system(size: 13))
                                 .foregroundStyle(Color("AppTextSecondary"))
                                 .lineLimit(1)
-                            if winner.isNew {
+                            if article.datetime.hasPrefix(today) {
                                 Text("NEW")
                                     .font(.system(size: 9, weight: .bold))
                                     .padding(.horizontal, 5)
@@ -195,8 +177,7 @@ struct HomeView: View {
                             }
                         }
                         Spacer()
-                        // 右侧：日期
-                        Text(winner.date)
+                        Text(String(article.datetime.dropFirst(5).prefix(5)))
                             .font(.system(size: 12))
                             .foregroundStyle(Color("AppTextSecondary"))
                             .fixedSize()
@@ -204,7 +185,7 @@ struct HomeView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 11)
 
-                    if index < winners.count - 1 {
+                    if index < min(winners.count, 5) - 1 {
                         Divider()
                             .background(Color("AppDivider"))
                             .padding(.horizontal, 16)
@@ -216,7 +197,7 @@ struct HomeView: View {
                 .background(Color("AppInputBackground"))
 
             // 查看更多
-            Button(action: {}) {
+            NavigationLink(destination: OnDemandView()) {
                 Text("更多 >")
                     .font(.system(size: 13))
                     .foregroundStyle(.yellow)
@@ -334,13 +315,7 @@ struct HomeView: View {
                     .font(.system(size: 11))
                     .foregroundStyle(Color("AppTextSecondary"))
                 Spacer()
-                Text(expert.price)
-                    .font(.system(size: 12, weight: .bold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(expert.price == "0宝" ? Color("AppInputBackground") : Color.yellow)
-                    .foregroundStyle(expert.price == "0宝" ? Color("AppTextSecondary") : Color.black)
-                    .cornerRadius(6)
+                PriceTag(raw: expert.price)
             }
         }
         .padding(14)
