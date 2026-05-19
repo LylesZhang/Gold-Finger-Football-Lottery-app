@@ -41,7 +41,7 @@ struct MainTabView: View {
 
             // 金手指日报
             NavigationStack {
-                placeholderView(title: "金手指日报", icon: "newspaper.fill")
+                DailyView()
             }
             .tabItem { Label("金手指日报", systemImage: "newspaper.fill") }
             .tag(2)
