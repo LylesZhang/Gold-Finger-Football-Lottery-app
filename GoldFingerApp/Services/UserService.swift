@@ -144,6 +144,16 @@ class UserService{
         return try JSONDecoder().decode([Announcement].self, from: data)
     }
 
+    func getDailyArticles(page: Int = 1) async throws -> [DailyArticle] {
+        guard let url = URL(string: "https://www.maicai.cn/newportal_mc.php?type=gold&tid=0&page=\(page)") else {
+            throw APIError(message: "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode([DailyArticle].self, from: data)
+    }
+
     func getOnDemandArticles(newsId: Int) async throws -> [OnDemandArticle] {
         guard let url = URL(string: "https://www.maicai.cn/newportal.php?type=getlm&columnId=\(newsId)") else {
             throw APIError(message: "Invalid URL")
