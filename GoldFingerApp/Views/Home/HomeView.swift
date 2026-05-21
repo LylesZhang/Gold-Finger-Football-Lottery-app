@@ -13,6 +13,9 @@ struct HomeView: View {
 
     @State private var winners: [OnDemandArticle] = []
     @State private var experts: [Expert] = []
+    @State private var purchasedIds: Set<Int> = []
+    @State private var navigateTo: ArticleNavTarget? = nil
+    @State private var articleToBuy: PurchaseTarget? = nil
 
 
     var body: some View {
@@ -30,16 +33,46 @@ struct HomeView: View {
         }
         .background(Color("AppBackground").ignoresSafeArea())
         .navigationBarHidden(true)
+        .navigationDestination(item: $navigateTo) { target in
+            ArticleDetailView(articleId: target.id, title: target.title, jmck: user.jmck)
+        }
+        .sheet(item: $articleToBuy) { target in
+            ArticlePurchaseSheet(
+                target: target,
+                user: user,
+                onSuccess: {
+                    purchasedIds.insert(target.fid)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        navigateTo = ArticleNavTarget(id: "\(target.fid)", title: target.title)
+                    }
+                }
+            )
+        }
         .task {
-            do {
-                banners = try await UserService.shares.getBanners()
-            } catch {}
-            do {
-                winners = try await UserService.shares.getOnDemandArticles(newsId: 321)
-            } catch {}
-            do {
-                experts = try await UserService.shares.getExperts()
-            } catch {}
+            do { banners = try await UserService.shares.getBanners() } catch {}
+            do { winners = try await UserService.shares.getOnDemandArticles(newsId: 321) } catch {}
+            do { experts = try await UserService.shares.getExperts() } catch {}
+            if let ids = try? await UserService.shares.getPurchasedArticleIds(uid: user.uid) {
+                purchasedIds = Set(ids)
+            }
+        }
+    }
+
+    private func parsePrice(_ raw: String) -> Int {
+        Int(raw.replacingOccurrences(of: "宝", with: "")) ?? 0
+    }
+
+    private func handleExpertTap(_ expert: Expert) {
+        let price = parsePrice(expert.price)
+        if price == 0 || purchasedIds.contains(Int(expert.articleId) ?? -1) {
+            navigateTo = ArticleNavTarget(id: expert.articleId, title: expert.latestTip)
+        } else {
+            articleToBuy = PurchaseTarget(
+                fid: Int(expert.articleId) ?? 0,
+                title: expert.latestTip,
+                price: price,
+                dId: 0
+            )
         }
     }
 
@@ -158,33 +191,36 @@ struct HomeView: View {
             let today = String(Date().description.prefix(10))
             ForEach(Array(winners.prefix(5).enumerated()), id: \.element.id) { index, article in
                 VStack(spacing: 0) {
-                    HStack(alignment: .center, spacing: 6) {
-                        HStack(spacing: 4) {
-                            Text("[\(article.prefix)]")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.yellow)
-                            Text(article.title)
-                                .font(.system(size: 13))
-                                .foregroundStyle(Color("AppTextSecondary"))
-                                .lineLimit(1)
-                            if article.datetime.hasPrefix(today) {
-                                Text("NEW")
-                                    .font(.system(size: 9, weight: .bold))
-                                    .padding(.horizontal, 5)
-                                    .padding(.vertical, 2)
-                                    .background(Color.red)
-                                    .foregroundStyle(Color("AppTextPrimary"))
-                                    .cornerRadius(4)
+                    NavigationLink(destination: ArticleDetailView(articleId: article.id, title: article.title, jmck: user.jmck)) {
+                        HStack(alignment: .center, spacing: 6) {
+                            HStack(spacing: 4) {
+                                Text("[\(article.prefix)]")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(.yellow)
+                                Text(article.title)
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(Color("AppTextSecondary"))
+                                    .lineLimit(1)
+                                if article.datetime.hasPrefix(today) {
+                                    Text("NEW")
+                                        .font(.system(size: 9, weight: .bold))
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 2)
+                                        .background(Color.red)
+                                        .foregroundStyle(Color("AppTextPrimary"))
+                                        .cornerRadius(4)
+                                }
                             }
+                            Spacer()
+                            Text(String(article.datetime.dropFirst(5).prefix(5)))
+                                .font(.system(size: 12))
+                                .foregroundStyle(Color("AppTextSecondary"))
+                                .fixedSize()
                         }
-                        Spacer()
-                        Text(String(article.datetime.dropFirst(5).prefix(5)))
-                            .font(.system(size: 12))
-                            .foregroundStyle(Color("AppTextSecondary"))
-                            .fixedSize()
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 11)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 11)
+                    .buttonStyle(.plain)
 
                     if index < min(winners.count, 5) - 1 {
                         Divider()
@@ -254,7 +290,10 @@ struct HomeView: View {
             // 推荐卡片列表
             VStack(spacing: 10) {
                 ForEach(experts) { expert in
-                    expertCard(expert)
+                    Button(action: { handleExpertTap(expert) }) {
+                        expertCard(expert)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, 16)

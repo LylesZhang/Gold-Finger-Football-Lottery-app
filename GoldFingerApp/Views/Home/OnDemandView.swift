@@ -2,9 +2,22 @@ import SwiftUI
 
 struct OnDemandView: View {
 
+    let user: User
+
     @State private var selectedTab = "tab01"
     @State private var articles: [OnDemandArticle] = []
     @State private var isLoading = false
+    @State private var purchasedIds: Set<Int> = []
+    @State private var navigateTo: ArticleNavTarget? = nil
+    @State private var articleToBuy: PurchaseTarget? = nil
+
+    private var currentTabNewsId: Int {
+        onDemandTabs.first(where: { $0.id == selectedTab })?.newsId ?? 0
+    }
+
+    private func parsePrice(_ raw: String) -> Int {
+        Int(raw.replacingOccurrences(of: "宝", with: "")) ?? 0
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -34,34 +47,43 @@ struct OnDemandView: View {
                 .background(Color("AppInputBackground"))
 
             // MARK: - 内容列表
-            if isLoading {
-                Spacer()
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .yellow))
-                Spacer()
-            } else if articles.isEmpty {
-                Spacer()
-                VStack(spacing: 12) {
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .font(.system(size: 36))
-                        .foregroundStyle(Color("AppTextTertiary"))
-                    Text("暂无内容")
-                        .font(.subheadline)
-                        .foregroundStyle(Color("AppTextSecondary"))
-                }
-                Spacer()
-            } else {
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        ForEach(articles) { article in
-                            articleRow(article)
-                            Divider()
-                                .background(Color("AppDivider"))
-                                .padding(.horizontal, 16)
-                        }
+            ZStack {
+                Color("AppBackground")
+
+                if isLoading {
+                    VStack(spacing: 14) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .yellow))
+                            .scaleEffect(1.2)
+                        Text("加载中...")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color("AppTextSecondary"))
                     }
-                    .padding(.top, 4)
-                    .padding(.bottom, 32)
+                } else if articles.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "doc.text.magnifyingglass")
+                            .font(.system(size: 36))
+                            .foregroundStyle(Color("AppTextTertiary"))
+                        Text("暂无内容")
+                            .font(.subheadline)
+                            .foregroundStyle(Color("AppTextSecondary"))
+                    }
+                } else {
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 0) {
+                            ForEach(articles) { article in
+                                Button(action: { handleArticleTap(article) }) {
+                                    articleRow(article)
+                                }
+                                .buttonStyle(.plain)
+                                Divider()
+                                    .background(Color("AppDivider"))
+                                    .padding(.horizontal, 16)
+                            }
+                        }
+                        .padding(.top, 4)
+                        .padding(.bottom, 32)
+                    }
                 }
             }
         }
@@ -74,6 +96,21 @@ struct OnDemandView: View {
                     .fontWeight(.bold)
                     .foregroundStyle(.yellow)
             }
+        }
+        .navigationDestination(item: $navigateTo) { target in
+            ArticleDetailView(articleId: target.id, title: target.title, jmck: user.jmck)
+        }
+        .sheet(item: $articleToBuy) { target in
+            ArticlePurchaseSheet(
+                target: target,
+                user: user,
+                onSuccess: {
+                    purchasedIds.insert(target.fid)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        navigateTo = ArticleNavTarget(id: "\(target.fid)", title: target.title)
+                    }
+                }
+            )
         }
         .task(id: selectedTab) {
             guard let tab = onDemandTabs.first(where: { $0.id == selectedTab }),
@@ -90,6 +127,25 @@ struct OnDemandView: View {
             }
             isLoading = false
         }
+        .task(id: user.uid) {
+            if let ids = try? await UserService.shares.getPurchasedArticleIds(uid: user.uid) {
+                purchasedIds = Set(ids)
+            }
+        }
+    }
+
+    private func handleArticleTap(_ article: OnDemandArticle) {
+        let price = parsePrice(article.money)
+        if price == 0 || purchasedIds.contains(Int(article.id) ?? -1) {
+            navigateTo = ArticleNavTarget(id: article.id, title: article.title)
+        } else {
+            articleToBuy = PurchaseTarget(
+                fid: Int(article.id) ?? 0,
+                title: article.title,
+                price: price,
+                dId: currentTabNewsId
+            )
+        }
     }
 
     // MARK: - 文章行
@@ -103,10 +159,10 @@ struct OnDemandView: View {
             HStack(spacing: 0) {
                 Text("发布时间：")
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(Color("AppTextSecondary"))
                 Text(article.datetime)
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(Color("AppTextSecondary"))
 
                 if !article.prefix.isEmpty {
                     Text("  [\(article.prefix)]")
@@ -126,6 +182,6 @@ struct OnDemandView: View {
 
 #Preview {
     NavigationStack {
-        OnDemandView()
+        OnDemandView(user: User(uid: 1, username: "测试用户"))
     }
 }

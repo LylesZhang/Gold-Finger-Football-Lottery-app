@@ -2,18 +2,29 @@ import SwiftUI
 
 struct DailyView: View {
 
+    let user: User
+    var switchToSubscribe: () -> Void = {}
+
     @State private var articles: [DailyArticle] = []
     @State private var isLoading = false
+    @State private var subscriptionValid = false
+    @State private var showExpiredAlert = false
+    @State private var selectedArticle: DailyArticle? = nil
 
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack {
+            Color("AppBackground").ignoresSafeArea()
+
             if isLoading {
-                Spacer()
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .yellow))
-                Spacer()
+                VStack(spacing: 14) {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .yellow))
+                        .scaleEffect(1.2)
+                    Text("加载中...")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color("AppTextSecondary"))
+                }
             } else if articles.isEmpty {
-                Spacer()
                 VStack(spacing: 12) {
                     Image(systemName: "newspaper")
                         .font(.system(size: 36))
@@ -22,12 +33,14 @@ struct DailyView: View {
                         .font(.subheadline)
                         .foregroundStyle(Color("AppTextSecondary"))
                 }
-                Spacer()
             } else {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         ForEach(articles) { article in
-                            articleRow(article)
+                            Button(action: { handleArticleTap(article) }) {
+                                articleRow(article)
+                            }
+                            .buttonStyle(.plain)
                             Divider()
                                 .background(Color("AppDivider"))
                                 .padding(.horizontal, 16)
@@ -38,7 +51,6 @@ struct DailyView: View {
                 }
             }
         }
-        .background(Color("AppBackground").ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -48,6 +60,15 @@ struct DailyView: View {
                     .foregroundStyle(.yellow)
             }
         }
+        .navigationDestination(item: $selectedArticle) { article in
+            ArticleDetailView(articleId: article.id, title: article.title, jmck: user.jmck, source: .daily)
+        }
+        .alert("订阅已过期", isPresented: $showExpiredAlert) {
+            Button("去订阅", role: .none) { switchToSubscribe() }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("金手指日报订阅已过期或未订阅，请前往「个人中心 → 订阅服务」续订后查看。")
+        }
         .task {
             isLoading = true
             do {
@@ -55,8 +76,31 @@ struct DailyView: View {
             } catch {
                 print("金手指日报拉取失败: \(error)")
             }
+            do {
+                let response = try await UserService.shares.getAllPayServices(uid: user.uid)
+                let serviceList = response.servicelist ?? []
+                subscriptionValid = serviceList.first(where: { $0.psServid == 41 }).map { isEndDateValid($0.enddate) } ?? false
+            } catch {
+                print("订阅状态拉取失败: \(error)")
+            }
             isLoading = false
         }
+    }
+
+    private func handleArticleTap(_ article: DailyArticle) {
+        if subscriptionValid {
+            selectedArticle = article
+        } else {
+            showExpiredAlert = true
+        }
+    }
+
+    // 判断到期日是否还未过期
+    private func isEndDateValid(_ enddate: String) -> Bool {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let end = formatter.date(from: enddate) else { return false }
+        return end >= Calendar.current.startOfDay(for: Date())
     }
 
     private func articleRow(_ article: DailyArticle) -> some View {
@@ -107,6 +151,6 @@ struct DailyView: View {
 
 #Preview {
     NavigationStack {
-        DailyView()
+        DailyView(user: User(uid: 1, username: "测试用户"))
     }
 }

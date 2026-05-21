@@ -29,7 +29,11 @@ class LoginViewModel: ObservableObject{
         isLoad = true
         
         do{
-            let user = try await UserService.shares.validLogin(username: username, password: password, captchaId: captchaId, captchaCode: captchaCode)
+            var user = try await UserService.shares.validLogin(username: username, password: password, captchaId: captchaId, captchaCode: captchaCode)
+            // 同步获取 jmck（失败不影响登录）
+            if let jmck = try? await UserService.shares.getJmck(username: username, password: password) {
+                user.jmck = jmck
+            }
             await MainActor.run{
                 loginMessage = "登录成功！"
                 loginUser = user
