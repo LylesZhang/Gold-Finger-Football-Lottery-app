@@ -22,6 +22,7 @@ struct MainTabView: View {
     }
 
     @State private var selectedTab = 0
+    @State private var tabIds: [Int: UUID] = [0: UUID(), 1: UUID(), 2: UUID(), 3: UUID()]
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -29,20 +30,23 @@ struct MainTabView: View {
             NavigationStack {
                 HomeView(user: user, switchToAccount: { selectedTab = 3 }, switchToOnDemand: { selectedTab = 1 })
             }
+            .id(tabIds[0])
             .tabItem { Label("首页", systemImage: "house.fill") }
             .tag(0)
 
             // 点播
             NavigationStack {
-                OnDemandView()
+                OnDemandView(user: user)
             }
+            .id(tabIds[1])
             .tabItem { Label("点播", systemImage: "play.circle.fill") }
             .tag(1)
 
             // 金手指日报
             NavigationStack {
-                DailyView()
+                DailyView(user: user, switchToSubscribe: { selectedTab = 3 })
             }
+            .id(tabIds[2])
             .tabItem { Label("金手指日报", systemImage: "newspaper.fill") }
             .tag(2)
 
@@ -50,10 +54,14 @@ struct MainTabView: View {
             NavigationStack {
                 AccountView(user: user)
             }
+            .id(tabIds[3])
             .tabItem { Label("个人中心", systemImage: "person.fill") }
             .tag(3)
         }
         .tint(.yellow)
+        .onChange(of: selectedTab) { oldTab, _ in
+            tabIds[oldTab] = UUID()
+        }
     }
 
     @ViewBuilder

@@ -165,6 +165,101 @@ class UserService{
         return try JSONDecoder().decode([OnDemandArticle].self, from: data)
     }
 
+    // 登录 maicai.cn 获取 jmck（用于查看付费文章内容）
+    func getJmck(username: String, password: String) async throws -> String {
+        var components = URLComponents(string: "https://www.maicai.cn/u/")!
+        components.queryItems = [
+            URLQueryItem(name: "mod",      value: "myajax"),
+            URLQueryItem(name: "file",     value: "myajax"),
+            URLQueryItem(name: "action",   value: "checkNewMbLogin"),
+            URLQueryItem(name: "username", value: username),
+            URLQueryItem(name: "userpass", value: password),
+        ]
+        guard let url = components.url else {
+            throw APIError(message: "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let response = try JSONDecoder().decode(JmckResponse.self, from: data)
+        guard response.code == 0, let jmck = response.jmck, !jmck.isEmpty else {
+            throw APIError(message: response.message ?? "获取jmck失败")
+        }
+        return jmck
+    }
+
+    // 获取金手指日报文章详情
+    func getDailyArticleDetail(fid: String, jmck: String) async throws -> ArticleDetailResponse {
+        var components = URLComponents(string: "https://www.maicai.cn/u/")!
+        components.queryItems = [
+            URLQueryItem(name: "mod",    value: "myajax"),
+            URLQueryItem(name: "file",   value: "myajax"),
+            URLQueryItem(name: "action", value: "getGdNewsInfo2"),
+            URLQueryItem(name: "fid",    value: fid),
+            URLQueryItem(name: "ck",     value: jmck),
+        ]
+        guard let url = components.url else {
+            throw APIError(message: "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode(ArticleDetailResponse.self, from: data)
+    }
+
+    // 获取文章详情 HTML 内容
+    func getArticleDetail(fid: String, jmck: String) async throws -> ArticleDetailResponse {
+        var components = URLComponents(string: "https://www.maicai.cn/u/")!
+        components.queryItems = [
+            URLQueryItem(name: "mod",    value: "myajax"),
+            URLQueryItem(name: "file",   value: "myajax"),
+            URLQueryItem(name: "action", value: "new_getnews"),
+            URLQueryItem(name: "fid",    value: fid),
+            URLQueryItem(name: "ck",     value: jmck),
+        ]
+        guard let url = components.url else {
+            throw APIError(message: "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode(ArticleDetailResponse.self, from: data)
+    }
+
+    func getPurchasedArticleIds(uid: Int) async throws -> [Int] {
+        guard let url = URL(string: "http://localhost:8080/api/order/purchased?uid=\(uid)") else {
+            throw APIError(message: "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let response = try JSONDecoder().decode(PurchasedIdsResponse.self, from: data)
+        if response.success {
+            return response.fids ?? []
+        } else {
+            throw APIError(message: response.message ?? "获取购买列表失败")
+        }
+    }
+
+    func buyArticle(uid: Int, fid: Int, money: Int, dId: Int, title: String) async throws {
+        var components = URLComponents(string: "http://localhost:8080/api/order/buy")!
+        components.queryItems = [
+            URLQueryItem(name: "uid",   value: "\(uid)"),
+            URLQueryItem(name: "fid",   value: "\(fid)"),
+            URLQueryItem(name: "money", value: "\(money)"),
+            URLQueryItem(name: "dId",   value: "\(dId)"),
+            URLQueryItem(name: "title", value: title),
+        ]
+        guard let url = components.url else { throw APIError(message: "Invalid URL") }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let response = try JSONDecoder().decode(BuyArticleResponse.self, from: data)
+        if !response.success {
+            throw APIError(message: response.message ?? "购买失败")
+        }
+    }
+
     func getAllServiceGroups() async throws -> ServiceGroupResponse {
         guard let url = URL(string: "http://localhost:8080/api/service/groups") else {
             throw APIError(message: "Invalid URL")

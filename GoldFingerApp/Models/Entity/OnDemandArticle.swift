@@ -1,4 +1,4 @@
-struct OnDemandArticle: Codable, Identifiable {
+struct OnDemandArticle: Codable, Identifiable, Hashable {
     let id: String
     let prefix: String
     let title: String

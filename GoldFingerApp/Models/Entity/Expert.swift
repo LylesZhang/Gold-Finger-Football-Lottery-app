@@ -9,6 +9,8 @@ struct Expert: Codable, Identifiable {
     let publishTime: String
     let price: String
 
+    let articleId: String   // 最新推荐文章的 ID，用于跳转详情
+
     enum CodingKeys: String, CodingKey {
         case id = "e_id"
         case name = "ename"
@@ -19,5 +21,6 @@ struct Expert: Codable, Identifiable {
         case latestTip = "n_title"
         case publishTime = "n_addtime"
         case price = "n_money"
+        case articleId = "n_id"
     }
 }

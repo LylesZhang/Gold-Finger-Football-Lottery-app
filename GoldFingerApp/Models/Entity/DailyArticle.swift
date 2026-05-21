@@ -1,4 +1,4 @@
-struct DailyArticle: Codable, Identifiable {
+struct DailyArticle: Codable, Identifiable, Hashable {
     let id: String
     let title: String
     let categoryName: String
