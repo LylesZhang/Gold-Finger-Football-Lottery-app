@@ -8,9 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.lyles.entity.PayUser;
 
 public interface PayUserRepository extends JpaRepository<PayUser, Integer> {
-    @Query(value = "SELECT * FROM maicai_u.pay_users WHERE username = ?1", nativeQuery = true)
-    PayUser findBalancebyUsername(String username);
-
     @Query(value = "SELECT * FROM maicai_u.pay_users WHERE uid = ?1", nativeQuery = true)
     PayUser findBalancebyUid(int uid);
 

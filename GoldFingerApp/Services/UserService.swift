@@ -4,71 +4,57 @@ class UserService{
     static let shares = UserService()
     private init(){}
     
-    func validLogin(username: String, password: String, captchaId: String, captchaCode: String) async throws -> User{
-        guard let url = URL(string: "http://localhost:8080/api/auth/login") else{
+    func validateCaptcha(captchaId: String, captchaCode: String) async throws {
+        guard let url = URL(string: "http://localhost:8080/api/auth/login") else {
             throw APIError(message: "Invalid URL")
         }
-        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        
-        let body = "idString=\(username)&password=\(password)&captchaId=\(captchaId)&captchaCode=\(captchaCode)"
+        let body = "captchaId=\(captchaId)&captchaCode=\(captchaCode)"
         request.httpBody = body.data(using: .utf8)
-        
-        let (data, urlResponse) = try await URLSession.shared.data(for: request)
-
+        let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(LoginResponse.self, from: data)
-
-        if response.success, let uid = response.uid, let username = response.username{
-            return User(uid: uid, username: username)
-        } else{
-            throw APIError(message: response.message ?? "登陆失败")
+        if !response.success {
+            throw APIError(message: response.message ?? "验证码错误")
         }
     }
     
-    func validRegister(username: String, password: String) async throws -> User{
-        guard let url = URL(string: "http://localhost:8080/api/auth/register") else{
-            throw APIError(message: "Invalid URL")
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        
-        let body = "username=\(username)&password=\(password)"
-        request.httpBody = body.data(using: .utf8)
-        
-        let (data, urlResponse) = try await URLSession.shared.data(for: request)
-        
-        let response = try JSONDecoder().decode(RegisterResponse.self, from: data)
-        
-        if response.success, let uid = response.uid, let username = response.username{
-            return  User(uid: uid, username: username)
-        } else{
-            throw APIError(message: response.message ?? "注册失败")
-        }
-    }
-    
-    func getAccountinfo(username: String) async throws -> AccountInfoResponse{
-        guard let url = URL(string: "http://localhost:8080/api/payuser/balance?username=\(username)") else{
-            throw APIError(message: "Invalid URL")
-        }
-        
+    func registerWithRemote(username: String, password: String) async throws {
+        var components = URLComponents(string: "https://www.maicai.cn/u/")!
+        components.queryItems = [
+            URLQueryItem(name: "mod",      value: "myajax"),
+            URLQueryItem(name: "file",     value: "myajax"),
+            URLQueryItem(name: "action",   value: "NewMbReg"),
+            URLQueryItem(name: "username", value: username),
+            URLQueryItem(name: "userpass", value: password),
+        ]
+        guard let url = components.url else { throw APIError(message: "Invalid URL") }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
-        let (data, urlResponse) = try await URLSession.shared.data(for: request)
-        
-        let response = try JSONDecoder().decode(AccountInfoResponse.self, from: data)
-        
-        if response.success{
-            return  response
-        } else{
-            throw APIError(message: response.message ?? "查找余额失败")
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let response = try JSONDecoder().decode(RemoteRegisterResponse.self, from: data)
+        guard response.status == 1 else {
+            throw APIError(message: response.msg ?? "注册失败")
         }
     }
     
+    func getRealtimeBalance(username: String) async throws -> Double {
+        var components = URLComponents(string: "https://www.maicai.cn/u/")!
+        components.queryItems = [
+            URLQueryItem(name: "mod",    value: "myajax"),
+            URLQueryItem(name: "file",   value: "myajax"),
+            URLQueryItem(name: "action", value: "get_newmb_smoney"),
+            URLQueryItem(name: "uname",  value: username),
+        ]
+        guard let url = components.url else { throw APIError(message: "Invalid URL") }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let response = try JSONDecoder().decode(SMoneyResponse.self, from: data)
+        return Double(response.s_money ?? "0") ?? 0.0
+    }
+
     func getAllPayServices(uid: Int) async throws -> PayServiceResponse{
         guard let url = URL(string: "http://localhost:8080/api/payuser/payservice?uid=\(uid)") else{
             throw APIError(message: "Invalid URL")
@@ -165,8 +151,8 @@ class UserService{
         return try JSONDecoder().decode([OnDemandArticle].self, from: data)
     }
 
-    // 登录 maicai.cn 获取 jmck（用于查看付费文章内容）
-    func getJmck(username: String, password: String) async throws -> String {
+    // 远程登录：调用 checkNewMbLogin，返回包含 uid + jmck 的 User
+    func loginWithRemote(username: String, password: String) async throws -> User {
         var components = URLComponents(string: "https://www.maicai.cn/u/")!
         components.queryItems = [
             URLQueryItem(name: "mod",      value: "myajax"),
@@ -181,11 +167,16 @@ class UserService{
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         let (data, _) = try await URLSession.shared.data(for: request)
-        let response = try JSONDecoder().decode(JmckResponse.self, from: data)
-        guard response.code == 0, let jmck = response.jmck, !jmck.isEmpty else {
-            throw APIError(message: response.message ?? "获取jmck失败")
+        let response = try JSONDecoder().decode(RemoteLoginResponse.self, from: data)
+        guard response.code == 0,
+              let uid = response.uid,
+              let jmck = response.jmck, !jmck.isEmpty else {
+            throw APIError(message: response.message ?? "登录失败")
         }
-        return jmck
+        return User(uid: uid, username: response.user_name ?? username, jmck: jmck,
+                    gfEnddate: response.gf_enddate,
+                    cpznEnddate: response.cpzn_enddate,
+                    jcrbEnddate: response.jcrb_enddate)
     }
 
     // 获取金手指日报文章详情
@@ -226,38 +217,20 @@ class UserService{
         return try JSONDecoder().decode(ArticleDetailResponse.self, from: data)
     }
 
-    func getPurchasedArticleIds(uid: Int) async throws -> [Int] {
-        guard let url = URL(string: "http://localhost:8080/api/order/purchased?uid=\(uid)") else {
-            throw APIError(message: "Invalid URL")
-        }
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let response = try JSONDecoder().decode(PurchasedIdsResponse.self, from: data)
-        if response.success {
-            return response.fids ?? []
-        } else {
-            throw APIError(message: response.message ?? "获取购买列表失败")
-        }
-    }
-
-    func buyArticle(uid: Int, fid: Int, money: Int, dId: Int, title: String) async throws {
-        var components = URLComponents(string: "http://localhost:8080/api/order/buy")!
+    func getNewMbOrders(username: String, jmck: String) async throws -> [MbOrder] {
+        var components = URLComponents(string: "https://www.maicai.cn/u/")!
         components.queryItems = [
-            URLQueryItem(name: "uid",   value: "\(uid)"),
-            URLQueryItem(name: "fid",   value: "\(fid)"),
-            URLQueryItem(name: "money", value: "\(money)"),
-            URLQueryItem(name: "dId",   value: "\(dId)"),
-            URLQueryItem(name: "title", value: title),
+            URLQueryItem(name: "mod",    value: "myajax"),
+            URLQueryItem(name: "file",   value: "myajax"),
+            URLQueryItem(name: "action", value: "getNewMbOrders"),
+            URLQueryItem(name: "uname",  value: username),
+            URLQueryItem(name: "ck",     value: jmck),
         ]
         guard let url = components.url else { throw APIError(message: "Invalid URL") }
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
+        request.httpMethod = "GET"
         let (data, _) = try await URLSession.shared.data(for: request)
-        let response = try JSONDecoder().decode(BuyArticleResponse.self, from: data)
-        if !response.success {
-            throw APIError(message: response.message ?? "购买失败")
-        }
+        return try JSONDecoder().decode([MbOrder].self, from: data)
     }
 
     func getAllServiceGroups() async throws -> ServiceGroupResponse {

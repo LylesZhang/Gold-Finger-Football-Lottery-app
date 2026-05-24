@@ -88,13 +88,28 @@ struct AccountView: View {
                     .foregroundStyle(.black)
             }
 
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(user.username)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Color("AppTextPrimary"))
                 Text("UID: \(user.uid)")
                     .font(.system(size: 12))
                     .foregroundStyle(Color("AppTextSecondary"))
+                if let d = user.gfEnddate, !d.isEmpty {
+                    Text("金手指日报：\(d)")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.yellow.opacity(0.85))
+                }
+                if let d = user.cpznEnddate, !d.isEmpty {
+                    Text("彩票指南：\(d)")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.yellow.opacity(0.85))
+                }
+                if let d = user.jcrbEnddate, !d.isEmpty {
+                    Text("竞彩日报：\(d)")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.yellow.opacity(0.85))
+                }
             }
 
             Spacer()
@@ -161,8 +176,14 @@ struct AccountView: View {
         switch title {
         case "订阅服务":
             SubscriptionServiceView(user: user)
+        case "帐户明细":
+            AccountDetailView(user: user)
         case "设置":
             SettingsView()
+        case "服务指南":
+            ServiceGuideView()
+        case "关于我们":
+            AboutView()
         default:
             Color("AppBackground")
                 .ignoresSafeArea()
@@ -206,8 +227,7 @@ struct AccountView: View {
 // MARK: - 订阅服务子页面（原账户内容）
 struct SubscriptionServiceView: View {
     let user: User
-    @State private var balance: Double = 0.0
-    @State private var serviceList: [PayService] = []
+    @State private var balance: Double? = nil
 
     var body: some View {
         ScrollView {
@@ -233,7 +253,7 @@ struct SubscriptionServiceView: View {
                                 .font(.system(size: 22, weight: .semibold))
                                 .foregroundStyle(.yellow.opacity(0.8))
                                 .padding(.bottom, 6)
-                            Text(String(format: "%.2f", balance))
+                            Text(String(format: "%.2f", balance ?? 0.0))
                                 .font(.system(size: 52, weight: .bold))
                                 .foregroundStyle(.yellow)
                             Spacer()
@@ -272,7 +292,36 @@ struct SubscriptionServiceView: View {
                     }
                     .padding(.horizontal, 20)
 
-                    if serviceList.isEmpty {
+                    if let enddate = user.gfEnddate, !enddate.isEmpty {
+                        HStack(spacing: 16) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.yellow.opacity(0.15))
+                                    .frame(width: 48, height: 48)
+                                Image(systemName: "star.fill")
+                                    .foregroundStyle(.yellow)
+                                    .font(.system(size: 20))
+                            }
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("金手指日报")
+                                    .font(.subheadline).fontWeight(.semibold)
+                                    .foregroundStyle(Color("AppTextPrimary"))
+                                Text("有效期至：\(enddate)")
+                                    .font(.caption)
+                                    .foregroundStyle(Color("AppTextSecondary"))
+                            }
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                                .font(.system(size: 20))
+                        }
+                        .padding(.horizontal, 18).padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color("AppDivider"))
+                        )
+                        .padding(.horizontal, 20)
+                    } else {
                         VStack(spacing: 12) {
                             Image(systemName: "doc.text.magnifyingglass")
                                 .font(.system(size: 36))
@@ -283,37 +332,6 @@ struct SubscriptionServiceView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 40)
-                    } else {
-                        ForEach(serviceList) { service in
-                            HStack(spacing: 16) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.yellow.opacity(0.15))
-                                        .frame(width: 48, height: 48)
-                                    Image(systemName: "star.fill")
-                                        .foregroundStyle(.yellow)
-                                        .font(.system(size: 20))
-                                }
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(service.serviceName ?? "未知服务")
-                                        .font(.subheadline).fontWeight(.semibold)
-                                        .foregroundStyle(Color("AppTextPrimary"))
-                                    Text("有效期至：\(service.enddate)")
-                                        .font(.caption)
-                                        .foregroundStyle(Color("AppTextSecondary"))
-                                }
-                                Spacer()
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                                    .font(.system(size: 20))
-                            }
-                            .padding(.horizontal, 18).padding(.vertical, 14)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color("AppDivider"))
-                            )
-                            .padding(.horizontal, 20)
-                        }
                     }
                 }
 
@@ -324,17 +342,8 @@ struct SubscriptionServiceView: View {
         .background(Color("AppBackground").ignoresSafeArea())
         .navigationTitle("订阅服务")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            Task {
-                do {
-                    let accountInfo = try await UserService.shares.getAccountinfo(username: user.username)
-                    balance = accountInfo.balance ?? 0.0
-                } catch { print("用户余额信息获取失败") }
-                do {
-                    let response = try await UserService.shares.getAllPayServices(uid: user.uid)
-                    serviceList = response.servicelist ?? []
-                } catch { print("订阅服务获取失败: \(error)") }
-            }
+        .task {
+            balance = try? await UserService.shares.getRealtimeBalance(username: user.username)
         }
     }
 }

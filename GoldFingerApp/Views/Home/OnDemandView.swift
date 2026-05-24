@@ -3,11 +3,11 @@ import SwiftUI
 struct OnDemandView: View {
 
     let user: User
+    @Binding var purchasedIds: Set<Int>
 
     @State private var selectedTab = "tab01"
     @State private var articles: [OnDemandArticle] = []
     @State private var isLoading = false
-    @State private var purchasedIds: Set<Int> = []
     @State private var navigateTo: ArticleNavTarget? = nil
     @State private var articleToBuy: PurchaseTarget? = nil
 
@@ -127,11 +127,6 @@ struct OnDemandView: View {
             }
             isLoading = false
         }
-        .task(id: user.uid) {
-            if let ids = try? await UserService.shares.getPurchasedArticleIds(uid: user.uid) {
-                purchasedIds = Set(ids)
-            }
-        }
     }
 
     private func handleArticleTap(_ article: OnDemandArticle) {
@@ -182,6 +177,6 @@ struct OnDemandView: View {
 
 #Preview {
     NavigationStack {
-        OnDemandView(user: User(uid: 1, username: "测试用户"))
+        OnDemandView(user: User(uid: 1, username: "测试用户"), purchasedIds: .constant([]))
     }
 }
