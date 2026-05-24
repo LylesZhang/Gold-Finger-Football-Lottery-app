@@ -4,6 +4,7 @@ import Kingfisher
 
 struct HomeView: View {
     let user: User
+    @Binding var purchasedIds: Set<Int>
     var switchToAccount: () -> Void = {}
     var switchToOnDemand: () -> Void = {}
 
@@ -13,7 +14,6 @@ struct HomeView: View {
 
     @State private var winners: [OnDemandArticle] = []
     @State private var experts: [Expert] = []
-    @State private var purchasedIds: Set<Int> = []
     @State private var navigateTo: ArticleNavTarget? = nil
     @State private var articleToBuy: PurchaseTarget? = nil
 
@@ -52,9 +52,6 @@ struct HomeView: View {
             do { banners = try await UserService.shares.getBanners() } catch {}
             do { winners = try await UserService.shares.getOnDemandArticles(newsId: 321) } catch {}
             do { experts = try await UserService.shares.getExperts() } catch {}
-            if let ids = try? await UserService.shares.getPurchasedArticleIds(uid: user.uid) {
-                purchasedIds = Set(ids)
-            }
         }
     }
 
@@ -368,5 +365,5 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView(user: User(uid: 1, username: "测试用户"))
+    HomeView(user: User(uid: 1, username: "测试用户"), purchasedIds: .constant([]))
 }

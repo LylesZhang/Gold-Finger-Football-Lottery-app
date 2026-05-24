@@ -23,12 +23,13 @@ struct MainTabView: View {
 
     @State private var selectedTab = 0
     @State private var tabIds: [Int: UUID] = [0: UUID(), 1: UUID(), 2: UUID(), 3: UUID()]
+    @State private var purchasedArticleIds: Set<Int> = []
 
     var body: some View {
         TabView(selection: $selectedTab) {
             // 首页
             NavigationStack {
-                HomeView(user: user, switchToAccount: { selectedTab = 3 }, switchToOnDemand: { selectedTab = 1 })
+                HomeView(user: user, purchasedIds: $purchasedArticleIds, switchToAccount: { selectedTab = 3 }, switchToOnDemand: { selectedTab = 1 })
             }
             .id(tabIds[0])
             .tabItem { Label("首页", systemImage: "house.fill") }
@@ -36,7 +37,7 @@ struct MainTabView: View {
 
             // 点播
             NavigationStack {
-                OnDemandView(user: user)
+                OnDemandView(user: user, purchasedIds: $purchasedArticleIds)
             }
             .id(tabIds[1])
             .tabItem { Label("点播", systemImage: "play.circle.fill") }
@@ -59,8 +60,8 @@ struct MainTabView: View {
             .tag(3)
         }
         .tint(.yellow)
-        .onChange(of: selectedTab) { oldTab, _ in
-            tabIds[oldTab] = UUID()
+        .onChange(of: selectedTab) { _, newTab in
+            tabIds[newTab] = UUID()
         }
     }
 

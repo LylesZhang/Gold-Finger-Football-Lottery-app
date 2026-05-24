@@ -21,14 +21,6 @@ public class PayuserService {
     @Autowired
     private PayServiceRepository payServiceRepository;
 
-    public Double getBalanceByUsername(String username){
-        PayUser payUser = payUserRepository.findBalancebyUsername(username);
-        if(payUser != null){
-            return payUser.getBalance();
-        }
-        return null;
-    }
-
     public Double getBalanceByUid(int uid){
         PayUser payUser = payUserRepository.findBalancebyUid(uid);
         if(payUser != null){

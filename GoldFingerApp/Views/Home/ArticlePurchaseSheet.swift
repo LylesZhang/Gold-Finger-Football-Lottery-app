@@ -8,8 +8,6 @@ struct ArticlePurchaseSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var balance: Double? = nil
     @State private var isLoadingBalance = true
-    @State private var isPurchasing = false
-    @State private var errorMessage: String? = nil
 
     private var canAfford: Bool {
         guard let balance else { return false }
@@ -62,8 +60,8 @@ struct ArticlePurchaseSheet: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .yellow))
                                     .scaleEffect(0.8)
-                            } else if let balance {
-                                Text(String(format: "%.2f 元", balance))
+                            } else {
+                                Text(String(format: "%.2f 元", balance ?? 0.0))
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundStyle(canAfford ? Color("AppTextPrimary") : .red)
                             }
@@ -83,39 +81,30 @@ struct ArticlePurchaseSheet: View {
                     .cornerRadius(12)
                     .padding(.horizontal, 16)
 
-                    // 错误信息
-                    if let errorMessage {
-                        Text(errorMessage)
-                            .font(.system(size: 13))
-                            .foregroundStyle(.red)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 16)
-                    }
-
                     Spacer()
 
                     // 购买按钮
                     Button(action: doPurchase) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(canAfford && !isLoadingBalance ? Color.yellow : Color("AppCard"))
-                                .frame(height: 50)
-                            if isPurchasing {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
-                            } else {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(canAfford && !isLoadingBalance ? Color.yellow : Color("AppCard"))
+                            .frame(height: 50)
+                            .overlay(
                                 Text("确认购买  \(target.price) 元")
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundStyle(canAfford && !isLoadingBalance ? .black : Color("AppTextTertiary"))
-                            }
-                        }
+                            )
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
-                    .disabled(!canAfford || isPurchasing || isLoadingBalance)
+                    .disabled(!canAfford || isLoadingBalance)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .task {
+                isLoadingBalance = true
+                balance = try? await UserService.shares.getRealtimeBalance(username: user.username)
+                isLoadingBalance = false
+            }
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("购买文章")
@@ -129,34 +118,11 @@ struct ArticlePurchaseSheet: View {
                 }
             }
         }
-        .task {
-            isLoadingBalance = true
-            if let info = try? await UserService.shares.getAccountinfo(username: user.username) {
-                balance = info.balance
-            }
-            isLoadingBalance = false
-        }
     }
 
     private func doPurchase() {
-        guard canAfford, !isPurchasing else { return }
-        isPurchasing = true
-        errorMessage = nil
-        Task {
-            do {
-                try await UserService.shares.buyArticle(
-                    uid: user.uid,
-                    fid: target.fid,
-                    money: target.price,
-                    dId: target.dId,
-                    title: target.title
-                )
-                dismiss()
-                onSuccess()
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-            isPurchasing = false
-        }
+        guard canAfford, !isLoadingBalance else { return }
+        dismiss()
+        onSuccess()
     }
 }
